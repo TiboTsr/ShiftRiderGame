@@ -30,9 +30,7 @@ class MainActivity : AppCompatActivity() {
 
         // Lancement du jeu
         btnPlay.setOnClickListener {
-            // Sauvegarder le pseudo avant de partir
             val pseudo = etPseudo.text.toString()
-            val prefs = getSharedPreferences("GAME_PREFS", Context.MODE_PRIVATE)
             prefs.edit().putString("PLAYER_PSEUDO", pseudo).apply()
 
             val intent = Intent(this, GameActivity::class.java)

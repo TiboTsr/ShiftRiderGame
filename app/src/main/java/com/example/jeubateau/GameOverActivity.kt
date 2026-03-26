@@ -45,7 +45,7 @@ class GameOverActivity : AppCompatActivity() {
     private fun sauvegarderScoreFirebase(scoreActuel: Int) {
         val prefs = getSharedPreferences("GAME_PREFS", MODE_PRIVATE)
         val monBadge = prefs.getString("MON_ID_SECRET", "ID_DE_SECOURS") ?: "ID_DE_SECOURS"
-        val monVraiPseudo = prefs.getString("MON_PSEUDO", "Joueur Inconnu") ?: "Joueur Inconnu"
+        val monVraiPseudo = prefs.getString("PLAYER_PSEUDO", "Joueur Inconnu") ?: "Joueur Inconnu"
         val meilleurScoreLocal = prefs.getInt("HIGH_SCORE", 0)
 
         if (scoreActuel > meilleurScoreLocal || meilleurScoreLocal == 0) {
