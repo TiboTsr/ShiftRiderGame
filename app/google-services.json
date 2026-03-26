@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "615169807831",
+    "firebase_url": "https://jeushiftraider-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "jeushiftraider",
+    "storage_bucket": "jeushiftraider.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:615169807831:android:866dad8367820828cda792",
+        "android_client_info": {
+          "package_name": "com.example.jeubateau"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuBK25Ay-Sq2TUH4R699pFBfZYZM82oNg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
