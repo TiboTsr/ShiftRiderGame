@@ -9,7 +9,7 @@ import com.google.firebase.database.FirebaseDatabase
 
 class GameOverActivity : AppCompatActivity() {
 
-    private val database = FirebaseDatabase.getInstance("https://jeushiftraider-default-rtdb.europe-west1.firebasedatabase.app/").getReference("Classement")
+    private val database = FirebaseDatabase.getInstance("https://shiftrider-cce69-default-rtdb.europe-west1.firebasedatabase.app/").getReference("Classement")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,18 +44,17 @@ class GameOverActivity : AppCompatActivity() {
     // --- FONCTION POUR ENVOYER LE SCORE ---
     private fun sauvegarderScoreFirebase(scoreActuel: Int) {
         val prefs = getSharedPreferences("GAME_PREFS", MODE_PRIVATE)
-        val monBadge = prefs.getString("MON_ID_SECRET", "ID_INCONNU") ?: "ID_INCONNU"
+        val monBadge = prefs.getString("MON_ID_SECRET", "ID_DE_SECOURS") ?: "ID_DE_SECOURS"
         val monVraiPseudo = prefs.getString("MON_PSEUDO", "Joueur Inconnu") ?: "Joueur Inconnu"
         val meilleurScoreLocal = prefs.getInt("HIGH_SCORE", 0)
 
-        if (scoreActuel >= meilleurScoreLocal && monBadge != "ID_INCONNU") {
+        if (scoreActuel > meilleurScoreLocal || meilleurScoreLocal == 0) {
             prefs.edit().putInt("HIGH_SCORE", scoreActuel).apply()
 
             val infosScore = mapOf(
                 "nom" to monVraiPseudo,
                 "score" to scoreActuel
             )
-
             database.child(monBadge).setValue(infosScore)
         }
     }

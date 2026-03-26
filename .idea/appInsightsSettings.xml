@@ -9,9 +9,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.example.jeubateau" />
-                  <option name="mobileSdkAppId" value="1:615169807831:android:866dad8367820828cda792" />
-                  <option name="projectId" value="jeushiftraider" />
-                  <option name="projectNumber" value="615169807831" />
+                  <option name="mobileSdkAppId" value="1:130847343348:android:279296f33dbaf5ae34d4a1" />
+                  <option name="projectId" value="shiftrider-cce69" />
+                  <option name="projectNumber" value="130847343348" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

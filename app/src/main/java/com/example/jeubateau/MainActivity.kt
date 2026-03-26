@@ -18,8 +18,15 @@ class MainActivity : AppCompatActivity() {
         val btnPlay = findViewById<Button>(R.id.btn_play)
         val btnGarage = findViewById<Button>(R.id.btn_garage)
         val etPseudo = findViewById<EditText>(R.id.et_pseudo)
-        
+
         actualiserInfosAccueil()
+
+        val prefs = getSharedPreferences("GAME_PREFS", MODE_PRIVATE)
+
+        if (!prefs.contains("MON_ID_SECRET")) {
+            val nouvelId = java.util.UUID.randomUUID().toString()
+            prefs.edit().putString("MON_ID_SECRET", nouvelId).apply()
+        }
 
         // Lancement du jeu
         btnPlay.setOnClickListener {
