@@ -18,6 +18,8 @@ class MainActivity : AppCompatActivity() {
         val btnPlay = findViewById<Button>(R.id.btn_play)
         val btnGarage = findViewById<Button>(R.id.btn_garage)
         val etPseudo = findViewById<EditText>(R.id.et_pseudo)
+        val btnRules = findViewById<Button>(R.id.btn_rules)
+        val btnSettings = findViewById<Button>(R.id.btn_settings)
 
         actualiserInfosAccueil()
 
@@ -41,6 +43,14 @@ class MainActivity : AppCompatActivity() {
         btnGarage.setOnClickListener {
             val intent = Intent(this, GarageActivity::class.java)
             startActivity(intent)
+        }
+
+        btnRules.setOnClickListener {
+            startActivity(Intent(this, RulesActivity::class.java))
+        }
+
+        btnSettings.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
         }
     }
 

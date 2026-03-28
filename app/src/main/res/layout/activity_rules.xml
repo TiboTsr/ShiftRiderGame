@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#1E2366"
+    android:padding="24dp"
+    android:gravity="center_horizontal">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Règles du jeu 📖"
+        android:textColor="#FFAA00"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"
+        android:layout_marginTop="32dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="1. Appuyez sur le côté gauche ou droit de l'écran pour changer de voie.\n\n2. Esquivez les astéroïdes qui arrivent face à votre fusée.\n\n3. La vitesse augmente avec votre score !\n\n4. Accumulez des pièces pour acheter de nouveaux vaisseaux dans le Garage."
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:lineSpacingExtra="12dp"
+        android:padding="16dp"
+        android:layout_weight="1"/>
+
+    <Button
+        android:id="@+id/btn_retour_rules"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Retour à l'accueil"
+        android:backgroundTint="#4CAF50"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:padding="12dp"
+        android:layout_marginBottom="16dp"/>
+
+</LinearLayout>

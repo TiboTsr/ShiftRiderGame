@@ -26,6 +26,10 @@ class GameOverActivity : AppCompatActivity() {
         val piecesGagnees = score / 10
         tvCoinsGagnes.text = "Pièces gagnées : +$piecesGagnees"
 
+        val prefs = getSharedPreferences("GAME_PREFS", MODE_PRIVATE)
+        val totalActuel = prefs.getInt("TOTAL_COINS", 0)
+        prefs.edit().putInt("TOTAL_COINS", totalActuel + piecesGagnees).apply()
+
         sauvegarderScoreFirebase(score)
 
         chargerClassementFirebase()
@@ -48,14 +52,22 @@ class GameOverActivity : AppCompatActivity() {
         val monVraiPseudo = prefs.getString("PLAYER_PSEUDO", "Joueur Inconnu") ?: "Joueur Inconnu"
         val meilleurScoreLocal = prefs.getInt("HIGH_SCORE", 0)
 
-        if (scoreActuel > meilleurScoreLocal || meilleurScoreLocal == 0) {
+        // On n'envoie à Firebase que si c'est un nouveau record personnel
+        if (scoreActuel > meilleurScoreLocal) {
             prefs.edit().putInt("HIGH_SCORE", scoreActuel).apply()
 
             val infosScore = mapOf(
                 "nom" to monVraiPseudo,
                 "score" to scoreActuel
             )
+
             database.child(monBadge).setValue(infosScore)
+                .addOnSuccessListener {
+                    android.util.Log.d("FIREBASE_OK", "Nouveau record de $monVraiPseudo envoyé !")
+                }
+                .addOnFailureListener { e ->
+                    android.util.Log.e("FIREBASE_ERROR", "Erreur : ${e.message}")
+                }
         }
     }
 
@@ -64,8 +76,6 @@ class GameOverActivity : AppCompatActivity() {
         val layoutLignes = findViewById<android.widget.LinearLayout>(R.id.layout_lignes)
         layoutLignes.removeAllViews()
         val pbLoading = findViewById<android.widget.ProgressBar>(R.id.pb_loading)
-
-        layoutLignes.removeAllViews()
 
         database.orderByChild("score").limitToLast(100).get().addOnSuccessListener { snapshot ->
 
@@ -107,13 +117,13 @@ class GameOverActivity : AppCompatActivity() {
                     textSize = 16f
                     setTypeface(null, android.graphics.Typeface.BOLD)
                     layoutParams = android.widget.LinearLayout.LayoutParams(
-                        0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f // 1f = Prend toute la place au milieu
+                        0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f
                     )
                 }
 
                 val tvScore = TextView(this).apply {
                     text = joueur.second
-                    setTextColor(android.graphics.Color.parseColor("#FFAA00")) // Orange !
+                    setTextColor(android.graphics.Color.parseColor("#FFAA00"))
                     textSize = 18f
                     setTypeface(null, android.graphics.Typeface.BOLD)
                 }

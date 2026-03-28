@@ -5,15 +5,12 @@
     android:id="@+id/game_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1E2366">
-
-    <!-- Guidelines pour définir les 3 pistes (Lanes) -->
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/gl_left"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.16" />
+    android:background="#1E2366"> <androidx.constraintlayout.widget.Guideline
+    android:id="@+id/gl_left"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    app:layout_constraintGuide_percent="0.16" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/gl_center"
@@ -29,43 +26,40 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.84" />
 
-    <!-- Affichage du score -->
     <TextView
         android:id="@+id/tv_score"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_margin="24dp"
         android:text="Score: 0"
-        android:textColor="#FFFFFF"
-        android:textSize="24sp"
+        android:textColor="#FFAA00"
+        android:textSize="28sp"
         android:textStyle="bold"
+        android:shadowColor="#000000"
+        android:shadowDx="2"
+        android:shadowDy="2"
+        android:shadowRadius="4"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- L'obstacle (Bateau ennemi par exemple) -->
-    <View
+    <ImageView
         android:id="@+id/obstacle"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="#FF4444"
+        android:scaleType="fitCenter"
         app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintWidth_percent="0.15"
+        app:layout_constraintWidth_percent="0.18"
         app:layout_constraintStart_toStartOf="@+id/gl_center"
         app:layout_constraintEnd_toEndOf="@+id/gl_center"
         app:layout_constraintTop_toTopOf="parent"
-        android:translationY="-100dp" />
-
-    <!-- Le joueur -->
-    <View
+        android:translationY="-100dp" /> <ImageView
         android:id="@+id/player"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginBottom="50dp"
-        android:background="#FFFFFF"
+        android:scaleType="fitCenter"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintWidth_percent="0.18"
+        app:layout_constraintWidth_percent="0.22"
         app:layout_constraintStart_toStartOf="@+id/gl_center"
-        app:layout_constraintEnd_toEndOf="@+id/gl_center" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+        app:layout_constraintEnd_toEndOf="@+id/gl_center" /> </androidx.constraintlayout.widget.ConstraintLayout>

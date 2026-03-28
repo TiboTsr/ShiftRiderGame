@@ -25,6 +25,8 @@
         <activity android:name=".GameActivity" />
         <activity android:name=".GameOverActivity" />
         <activity android:name=".GarageActivity" />
+        <activity android:name=".RulesActivity" android:exported="false" />
+        <activity android:name=".SettingsActivity" android:exported="false" />
 
     </application>
 </manifest>
