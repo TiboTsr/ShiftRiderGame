@@ -1,5 +1,6 @@
 package com.example.jeubateau
 
+import android.content.Context
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.widget.Button
@@ -46,24 +47,19 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         btnReset.setOnClickListener {
-            val monId = prefs.getString("MON_ID_SECRET", "")
-            val monPseudo = prefs.getString("PLAYER_PSEUDO", "")
+            android.app.AlertDialog.Builder(this)
+                .setTitle("Attention !")
+                .setMessage("Es-tu sûr de vouloir effacer toute ta progression ? (Pièces, Véhicules achetés, Meilleurs Scores)")
+                .setPositiveButton("Oui, tout effacer") { _, _ ->
+                    // Le code qui efface tout
+                    val prefs = getSharedPreferences("GAME_PREFS", Context.MODE_PRIVATE)
+                    prefs.edit().clear().apply()
 
-            prefs.edit().clear()
-                .putString("MON_ID_SECRET", monId)
-                .putString("PLAYER_PSEUDO", monPseudo)
-                .putBoolean("SETTING_MUSIC", true)
-                .putBoolean("SETTING_SFX", true)
-                .putBoolean("SETTING_VIBRATION", true)
-                .putBoolean("SETTING_60FPS", true)
-                .apply()
-
-            switchMusique.isChecked = true
-            switchEffets.isChecked = true
-            switchVibration.isChecked = true
-            switchFps.isChecked = true
-
-            Toast.makeText(this, "Scores et pièces remis à zéro !", Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(this, "Progression réinitialisée.", android.widget.Toast.LENGTH_SHORT).show()
+                    finish() // Ferme la page
+                }
+                .setNegativeButton("Annuler", null) // Ne fait rien si on annule
+                .show()
         }
     }
 }

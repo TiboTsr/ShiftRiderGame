@@ -6,14 +6,17 @@ import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 
 class RulesActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
+        // On bloque l'écran en mode portrait comme pour le reste du jeu
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
         setContentView(R.layout.activity_rules)
 
-        val btnRetour = findViewById<Button>(R.id.btn_retour_rules)
-        btnRetour.setOnClickListener {
-            finish()
+        // Bouton de retour
+        findViewById<Button>(R.id.btn_retour_accueil).setOnClickListener {
+            finish() // Ferme cette page et retourne automatiquement au menu principal
         }
     }
 }

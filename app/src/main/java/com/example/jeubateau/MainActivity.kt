@@ -21,6 +21,7 @@ class MainActivity : AppCompatActivity() {
         val etPseudo = findViewById<EditText>(R.id.et_pseudo)
         val btnRules = findViewById<Button>(R.id.btn_rules)
         val btnSettings = findViewById<Button>(R.id.btn_settings)
+        val btnClassement = findViewById<Button>(R.id.btn_classement)
 
         actualiserInfosAccueil()
 
@@ -50,6 +51,10 @@ class MainActivity : AppCompatActivity() {
 
         btnSettings.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
+        }
+
+        btnClassement.setOnClickListener {
+            startActivity(Intent(this, LeaderboardActivity::class.java))
         }
     }
 

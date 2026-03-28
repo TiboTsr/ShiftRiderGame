@@ -4,6 +4,7 @@ import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.os.Bundle
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -16,45 +17,156 @@ class GarageActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
+        // Force le mode portrait avant même de charger la vue
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         setContentView(R.layout.activity_garage)
 
-        // Vitesses de base revues à la hausse pour que même "TRÈS FACILE" soit engagé.
-        // L'accélération dans GameActivity fait le reste.
-        // niveauDifficulte doit correspondre EXACTEMENT aux cas dans GameActivity.increaseSpeed()
         items = listOf(
-            ItemGarage("coureur",  "ATHLÈTE",    "Rien ne bat la vitesse humaine. Courez vers la victoire !",           0,    R.drawable.coureur_image,         15f,  "TRÈS FACILE"),
-            ItemGarage("velo",     "BMX PRO",    "Léger et agile. Parfait pour slalomer entre les obstacles.",          50,   R.drawable.velo_image,            18f,  "FACILE"),
-            ItemGarage("cavalier", "CAVALIER",   "Un destrier puissant pour franchir tous les obstacles du domaine.",   100,  R.drawable.cavalier_image,        21f,  "MOYEN"),
-            ItemGarage("route",    "BOLIDE",     "La puissance du moteur au service de vos réflexes.",                  150,  R.drawable.voiture_image,         24f,  "NORMAL"),
-            ItemGarage("course",   "FORMULE 1",  "Le summum de la vitesse. Accrochez-vous !",                           300,  R.drawable.voituredecourse_image, 28f,  "DIFFICILE"),
-            ItemGarage("mer",      "CORSAIRE",   "Défiez les vagues à bord de ce navire légendaire.",                   500,  R.drawable.bateau_image,          32f,  "EXPERT"),
-            ItemGarage("avion_p",  "VOL LÉGER",  "Prenez de la hauteur avec cet avion de tourisme.",                   750,  R.drawable.petitavion_image,      36f,  "EXPERT"),
-            ItemGarage("avion_g",  "AIRLINER",   "Le géant des airs. Imposant et rapide.",                              1000, R.drawable.grandavion_image,      40f,  "MAÎTRE"),
-            ItemGarage("espace",   "STAR JUMPER","L'infini n'attend que vous. Voyagez vers les étoiles.",               1500, R.drawable.fusee_image,           46f,  "MAÎTRE"),
-            ItemGarage("comete",   "COMÈTE",     "Une entité cosmique dévastatrice. La vitesse ultime.",                2500, R.drawable.comete_image,          55f,  "LÉGENDAIRE")
+            ItemGarage(
+                "coureur",
+                "ATHLÈTE",
+                "Rien ne bat la vitesse humaine. Courez vers la victoire !",
+                0,
+                R.drawable.coureur_image,
+                15f,
+                "TRÈS FACILE"
+            ),
+            ItemGarage(
+                "velo",
+                "BMX PRO",
+                "Léger et agile. Parfait pour slalomer entre les obstacles.",
+                50,
+                R.drawable.velo_image,
+                18f,
+                "FACILE"
+            ),
+            ItemGarage(
+                "cavalier",
+                "CAVALIER",
+                "Un destrier puissant pour franchir tous les obstacles du domaine.",
+                100,
+                R.drawable.cavalier_image,
+                21f,
+                "MOYEN"
+            ),
+            ItemGarage(
+                "route",
+                "BOLIDE",
+                "La puissance du moteur au service de vos réflexes.",
+                150,
+                R.drawable.voiture_image,
+                24f,
+                "NORMAL"
+            ),
+            ItemGarage(
+                "course",
+                "FORMULE 1",
+                "Le summum de la vitesse. Accrochez-vous !",
+                300,
+                R.drawable.voituredecourse_image,
+                28f,
+                "DIFFICILE"
+            ),
+            ItemGarage(
+                "mer",
+                "CORSAIRE",
+                "Défiez les vagues à bord de ce navire légendaire.",
+                500,
+                R.drawable.bateau_image,
+                32f,
+                "EXPERT"
+            ),
+            ItemGarage(
+                "avion_p",
+                "VOL LÉGER",
+                "Prenez de la hauteur avec cet avion de tourisme.",
+                750,
+                R.drawable.petitavion_image,
+                36f,
+                "EXPERT"
+            ),
+            ItemGarage(
+                "avion_g",
+                "AIRLINER",
+                "Le géant des airs. Imposant et rapide.",
+                1000,
+                R.drawable.grandavion_image,
+                40f,
+                "MAÎTRE"
+            ),
+            ItemGarage(
+                "espace",
+                "STAR JUMPER",
+                "L'infini n'attend que vous. Voyagez vers les étoiles.",
+                1500,
+                R.drawable.fusee_image,
+                46f,
+                "MAÎTRE"
+            ),
+            ItemGarage(
+                "comete",
+                "COMÈTE",
+                "Une entité cosmique dévastatrice. La vitesse ultime.",
+                2500,
+                R.drawable.comete_image,
+                55f,
+                "LÉGENDAIRE"
+            )
         )
 
-        val viewPager    = findViewById<ViewPager2>(R.id.viewPagerGarage)
-        val tvNom        = findViewById<TextView>(R.id.tv_nom_item)
-        val tvDesc       = findViewById<TextView>(R.id.tv_desc_item)
-        val btnAction    = findViewById<Button>(R.id.btn_action_garage)
-        val tvMesPieces  = findViewById<TextView>(R.id.tv_mes_pieces)
+        val viewPager = findViewById<ViewPager2>(R.id.viewPagerGarage)
+        val tvNom = findViewById<TextView>(R.id.tv_nom_item)
+        val tvDesc = findViewById<TextView>(R.id.tv_desc_item)
+        val btnAction = findViewById<Button>(R.id.btn_action_garage)
+        val tvMesPieces = findViewById<TextView>(R.id.tv_mes_pieces)
 
         val prefs = getSharedPreferences("GAME_PREFS", MODE_PRIVATE)
+        val themeActuel = prefs.getString("THEME_NOM", "ATHLÈTE")
+
         tvMesPieces.text = "🪙 ${prefs.getInt("TOTAL_COINS", 0)}"
 
         val adapter = GarageAdapter(items)
         viewPager.adapter = adapter
 
-        tvNom.post { actualiserUI(items[0], tvNom, tvDesc, btnAction) }
+        // --- CORRECTION DE L'AFFICHAGE AU DÉMARRAGE ---
 
+        // 1. On cherche à quel index se trouve notre véhicule actuel
+        var indexDepart = items.indexOfFirst { it.nom == themeActuel }
+        if (indexDepart == -1) indexDepart = 0 // Sécurité si rien n'est trouvé
+
+        positionActuelle = indexDepart
+
+        // 2. On place le carrousel d'images directement sur le bon véhicule
+        viewPager.setCurrentItem(indexDepart, false)
+
+        // 3. On force la mise à jour des textes (Titre, Description) pour le BON véhicule !
+        tvNom.post { actualiserUI(items[indexDepart], tvNom, tvDesc, btnAction) }
+
+        // 4. On écoute les prochains glissements de doigt du joueur
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 positionActuelle = position
                 actualiserUI(items[position], tvNom, tvDesc, btnAction)
             }
         })
+
+        // ----------------------------------------------
+
+        // Fonctionnement des flèches latérales (Correction : ImageButton)
+        val btnLeft = findViewById<ImageButton>(R.id.btn_left)
+        val btnRight = findViewById<ImageButton>(R.id.btn_right)
+
+        btnLeft.setOnClickListener {
+            if (viewPager.currentItem > 0) {
+                viewPager.currentItem -= 1
+            }
+        }
+
+        btnRight.setOnClickListener {
+            if (viewPager.currentItem < items.size - 1) {
+                viewPager.currentItem += 1
+            }
+        }
 
         btnAction.setOnClickListener {
             tenterAchat(items[positionActuelle], btnAction)

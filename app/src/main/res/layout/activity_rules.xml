@@ -1,41 +1,144 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="#1E2366"
-    android:padding="24dp"
-    android:gravity="center_horizontal">
+    android:fillViewport="true">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Règles du jeu 📖"
-        android:textColor="#FFAA00"
-        android:textSize="32sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="24dp"
-        android:layout_marginTop="32dp"/>
-
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="1. Appuyez sur le côté gauche ou droit de l'écran pour changer de voie.\n\n2. Esquivez les astéroïdes qui arrivent face à votre fusée.\n\n3. La vitesse augmente avec votre score !\n\n4. Accumulez des pièces pour acheter de nouveaux vaisseaux dans le Garage."
-        android:textColor="#FFFFFF"
-        android:textSize="20sp"
-        android:lineSpacingExtra="12dp"
-        android:padding="16dp"
-        android:layout_weight="1"/>
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center_horizontal">
 
-    <Button
-        android:id="@+id/btn_retour_rules"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Retour à l'accueil"
-        android:backgroundTint="#4CAF50"
-        android:textColor="#FFFFFF"
-        android:textStyle="bold"
-        android:padding="12dp"
-        android:layout_marginBottom="16dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📜 RÈGLES DU JEU"
+            android:textColor="#FFAA00"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="30dp" />
 
-</LinearLayout>
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="#323B8A"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🎮 COMMENT JOUER ?"
+                    android:textColor="#FFFFFF"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Glissez simplement votre doigt vers la GAUCHE ou vers la DROITE pour changer de voie.\nVotre but : survivre le plus longtemps possible sans percuter d'obstacle !"
+                    android:textColor="#D0D5FF"
+                    android:textSize="16sp"
+                    android:lineSpacingExtra="4dp"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="#323B8A"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🪙 RÉCOMPENSES"
+                    android:textColor="#FFFFFF"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Chaque obstacle franchi augmente votre score de 10 points. À la fin de votre course, vous gagnez 1 Pièce d'Or tous les 10 points marqués."
+                    android:textColor="#D0D5FF"
+                    android:textSize="16sp"
+                    android:lineSpacingExtra="4dp"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="#323B8A"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🚀 VÉHICULES ET DIFFICULTÉ"
+                    android:textColor="#FFFFFF"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Utilisez vos pièces dans le Garage pour débloquer de nouvelles machines.\nAttention : chaque véhicule possède sa propre vitesse et son propre niveau de difficulté !"
+                    android:textColor="#D0D5FF"
+                    android:textSize="16sp"
+                    android:lineSpacingExtra="4dp"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/btn_retour_accueil"
+            android:layout_width="match_parent"
+            android:layout_height="65dp"
+            android:text="◀  RETOUR À L'ACCUEIL"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#FF3344"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp"
+            app:cornerRadius="12dp"/>
+
+    </LinearLayout>
+</ScrollView>

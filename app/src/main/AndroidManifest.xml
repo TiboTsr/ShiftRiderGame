@@ -59,5 +59,11 @@
             android:screenOrientation="locked"
             tools:ignore="LockedOrientationActivity" />
 
+        <activity
+            android:name=".LeaderboardActivity"
+            android:exported="false"
+            android:screenOrientation="locked"
+            tools:ignore="LockedOrientationActivity" />
+
     </application>
 </manifest>
