@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"> <uses-permission android:name="android.permission.INTERNET" />
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
@@ -13,10 +15,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.JeuBateau">
 
+        <!--
+            SCREEN_ORIENTATION_LOCKED : verrouille l'orientation courante au démarrage.
+            Combiné à PORTRAIT dans le code Kotlin, ça garantit portrait strict sur tous
+            les appareils et versions Android, même si l'utilisateur force la rotation
+            dans les paramètres système.
+        -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:screenOrientation="portrait"
+            android:screenOrientation="locked"
             tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,11 +32,32 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".GameActivity" android:screenOrientation="portrait" tools:ignore="LockedOrientationActivity" />
-        <activity android:name=".GameOverActivity" android:screenOrientation="portrait" tools:ignore="LockedOrientationActivity" />
-        <activity android:name=".GarageActivity" android:screenOrientation="portrait" tools:ignore="LockedOrientationActivity" />
-        <activity android:name=".RulesActivity" android:exported="false" android:screenOrientation="portrait" tools:ignore="LockedOrientationActivity" />
-        <activity android:name=".SettingsActivity" android:exported="false" android:screenOrientation="portrait" tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".GameActivity"
+            android:screenOrientation="locked"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".GameOverActivity"
+            android:screenOrientation="locked"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".GarageActivity"
+            android:screenOrientation="locked"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".RulesActivity"
+            android:exported="false"
+            android:screenOrientation="locked"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:screenOrientation="locked"
+            tools:ignore="LockedOrientationActivity" />
 
     </application>
 </manifest>

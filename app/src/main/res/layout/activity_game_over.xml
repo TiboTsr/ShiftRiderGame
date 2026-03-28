@@ -13,18 +13,19 @@
         android:layout_height="wrap_content"
         android:text="Vous avez perdu"
         android:textColor="#FFFFFF"
-        android:textSize="36sp"
+        android:textSize="32sp"
         android:textStyle="bold"
         android:layout_marginTop="8dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Carte score -->
     <LinearLayout
         android:id="@+id/card_score"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="12dp"
         android:background="@drawable/rounded_bg"
         android:orientation="vertical"
         android:gravity="center"
@@ -38,13 +39,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Votre score"
-            android:textColor="#A0A5D0" />
+            android:textColor="#A0A5D0"
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/tv_score_final"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="67"
+            android:text="0"
             android:textColor="#FFAA00"
             android:textSize="48sp"
             android:textStyle="bold" />
@@ -53,18 +55,32 @@
             android:id="@+id/tv_coins_gagnes"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Pièces gagnées : +6"
-            android:textColor="#A0A5D0" />
+            android:text="Pièces gagnées : +0"
+            android:textColor="#A0A5D0"
+            android:textSize="14sp" />
+
+        <!-- Thème utilisé -->
+        <TextView
+            android:id="@+id/tv_theme_used"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Véhicule : ATHLÈTE"
+            android:textColor="#A0A5D0"
+            android:textSize="13sp"
+            android:textStyle="italic" />
+
     </LinearLayout>
 
+    <!-- Boutons -->
     <Button
         android:id="@+id/btn_accueil"
         android:layout_width="0dp"
-        android:layout_height="55dp"
-        android:layout_marginBottom="16dp"
+        android:layout_height="52dp"
+        android:layout_marginBottom="12dp"
         android:text="⌂ Accueil"
         android:textColor="#FFFFFF"
-        android:textSize="18sp"
+        android:textSize="17sp"
         android:backgroundTint="#323B8A"
         app:layout_constraintWidth_max="500dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -74,23 +90,24 @@
     <Button
         android:id="@+id/btn_rejouer"
         android:layout_width="0dp"
-        android:layout_height="55dp"
+        android:layout_height="52dp"
         android:layout_marginBottom="8dp"
         android:text="↻ Rejouer"
         android:textColor="#FFFFFF"
-        android:textSize="18sp"
+        android:textSize="17sp"
         android:backgroundTint="#FFAA00"
         app:layout_constraintWidth_max="500dp"
         app:layout_constraintBottom_toTopOf="@+id/btn_accueil"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Classement par thème -->
     <LinearLayout
         android:id="@+id/card_leaderboard"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="8dp"
         android:background="@drawable/rounded_bg"
         android:orientation="vertical"
         android:padding="16dp"
@@ -101,12 +118,13 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <TextView
+            android:id="@+id/tv_titre_classement"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="🌍 Classement mondial"
             android:textAlignment="center"
             android:textColor="#FFFFFF"
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:textStyle="bold"
             android:layout_marginBottom="8dp" />
 
@@ -115,7 +133,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             android:indeterminateTint="#FFAA00" />
 
         <ScrollView
@@ -128,8 +146,7 @@
                 android:id="@+id/layout_lignes"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
-            </LinearLayout>
+                android:orientation="vertical" />
 
         </ScrollView>
 

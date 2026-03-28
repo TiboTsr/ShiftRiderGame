@@ -1,6 +1,5 @@
 package com.example.jeubateau
 
-import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Bundle
@@ -17,7 +16,6 @@ class MainActivity : AppCompatActivity() {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         setContentView(R.layout.activity_main)
 
-        // Récupération des vues
         val btnPlay = findViewById<Button>(R.id.btn_play)
         val btnGarage = findViewById<Button>(R.id.btn_garage)
         val etPseudo = findViewById<EditText>(R.id.et_pseudo)
@@ -33,7 +31,6 @@ class MainActivity : AppCompatActivity() {
             prefs.edit().putString("MON_ID_SECRET", nouvelId).apply()
         }
 
-        // Lancement du jeu
         btnPlay.setOnClickListener {
             val pseudo = etPseudo.text.toString()
             prefs.edit().putString("PLAYER_PSEUDO", pseudo).apply()
@@ -42,7 +39,6 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // Ouverture du garage
         btnGarage.setOnClickListener {
             val intent = Intent(this, GarageActivity::class.java)
             startActivity(intent)
@@ -56,7 +52,6 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
     }
-
 
     private fun actualiserInfosAccueil() {
         val tvTopScore = findViewById<TextView>(R.id.tv_top_score)
@@ -73,7 +68,6 @@ class MainActivity : AppCompatActivity() {
         val difficulte = prefs.getString("DIFF_ACTUELLE", "TRÈS FACILE") ?: "TRÈS FACILE"
         val pseudo = prefs.getString("PLAYER_PSEUDO", "")
 
-        // Mise à jour des textes
         tvTopScore.text = "🏆 Meilleur score: $highScore"
         tvCoins.text = "🪙 $coins"
 

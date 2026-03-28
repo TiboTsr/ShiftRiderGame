@@ -1,6 +1,5 @@
 package com.example.jeubateau
 
-import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -18,264 +17,214 @@ import kotlin.math.abs
 
 class GameActivity : AppCompatActivity() {
 
-    private var frameDelay = 16L // 16ms = ~60 FPS
+    private var frameDelay = 16L
 
     private lateinit var player: ImageView
-    private lateinit var obstacle: ImageView
-    private lateinit var obstacle2: ImageView
     private lateinit var tvScore: TextView
     private lateinit var gameLayout: ConstraintLayout
 
     private var difficulteActuelle = "TRÈS FACILE"
-
     private var currentLane = 1
     private var score = 0
     private var isGameOver = false
     private var screenWidth = 0
-    private var gameSpeed = 12f
+    private var screenHeight = 0
+
+    // Vitesse normalisée : on cible la même vitesse visuelle (% écran/s)
+    // indépendamment de la résolution physique
+    private var gameSpeedBase = 15f  // px/frame à 800px de hauteur
+    private var gameSpeed = 15f
+    private val REFERENCE_HEIGHT = 800f
 
     private var x1 = 0f
-    private val MIN_DISTANCE = 100
+    private val MIN_SWIPE = 60
 
     private var obstacleResources: List<Int> = listOf()
 
+    data class ObstacleSlot(val view: ImageView, var lane: Int)
+    private val pool = mutableListOf<ObstacleSlot>()
+
+    // Nombre max d'obstacles simultanés selon le score
+    private fun maxObstacles(): Int = when {
+        score < 80  -> 1
+        score < 250 -> 2
+        score < 600 -> 3
+        else        -> 4
+    }
+
+    // Espacement minimal (en px relatif à l'écran) entre le haut de l'écran
+    // et le spawn du prochain obstacle. Diminue avec le score.
+    private fun minSpacing(): Float = screenHeight * when {
+        score < 80  -> 0.55f
+        score < 250 -> 0.38f
+        score < 600 -> 0.25f
+        else        -> 0.15f
+    }
+
     private val handler = Handler(Looper.getMainLooper())
-    private val gameRunnable = object : Runnable {
+    private val loop = object : Runnable {
         override fun run() {
-            if (!isGameOver) {
-                updateGame()
-                handler.postDelayed(this, frameDelay)
-            }
+            if (!isGameOver) { update(); handler.postDelayed(this, frameDelay) }
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
         setContentView(R.layout.activity_game)
-
-        player = findViewById(R.id.player)
-        obstacle = findViewById(R.id.obstacle)
-        obstacle2 = findViewById(R.id.obstacle2)
-        tvScore = findViewById(R.id.tv_score)
+        player     = findViewById(R.id.player)
+        tvScore    = findViewById(R.id.tv_score)
         gameLayout = findViewById(R.id.game_layout)
-
-        appliquerTheme()
-
+        applyTheme()
         gameLayout.post {
-            screenWidth = gameLayout.width
-            resetGame()
+            screenWidth  = gameLayout.width
+            screenHeight = gameLayout.height
+            gameSpeed = gameSpeedBase * (screenHeight / REFERENCE_HEIGHT)
+            reset()
         }
-
-        gameLayout.setOnTouchListener { _, event ->
+        gameLayout.setOnTouchListener { _, e ->
             if (!isGameOver) {
-                when (event.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        x1 = event.x
-                    }
-                    MotionEvent.ACTION_UP -> {
-                        val x2 = event.x
-                        val deltaX = x2 - x1
-                        if (abs(deltaX) > MIN_DISTANCE) {
-                            if (deltaX > 0) movePlayer(left = false)
-                            else movePlayer(left = true)
-                        }
-                    }
+                if (e.action == MotionEvent.ACTION_DOWN) x1 = e.x
+                if (e.action == MotionEvent.ACTION_UP) {
+                    val dx = e.x - x1
+                    if (abs(dx) > MIN_SWIPE) { if (dx > 0) movePlayer(false) else movePlayer(true) }
                 }
             }
             true
         }
     }
 
-    private fun appliquerTheme() {
-        val prefs = getSharedPreferences("GAME_PREFS", Context.MODE_PRIVATE)
-        difficulteActuelle = prefs.getString("DIFF_ACTUELLE", "TRÈS FACILE") ?: "TRÈS FACILE"
-
-        val is60Fps = prefs.getBoolean("SETTING_60FPS", true)
-        frameDelay = if (is60Fps) 16L else 32L
-        val themeNom = prefs.getString("THEME_NOM", "ATHLÈTE")
-        gameSpeed = prefs.getFloat("VITESSE_ACTUELLE", 12f)
-
-        when (themeNom) {
-            "ATHLÈTE" -> {
-                gameLayout.setBackgroundResource(R.drawable.fond_champ)
-                player.setImageResource(R.drawable.coureur_image)
-                obstacleResources = listOf(R.drawable.tree_image, R.drawable.rock_image, R.drawable.barriere_image, R.drawable.vache_image)
-            }
-            "BMX PRO" -> {
-                gameLayout.setBackgroundResource(R.drawable.fond_champ)
-                player.setImageResource(R.drawable.velo_image)
-                obstacleResources = listOf(R.drawable.tree_image, R.drawable.rock_image, R.drawable.barriere_image, R.drawable.vache_image)
-            }
-            "CAVALIER" -> {
-                gameLayout.setBackgroundResource(R.drawable.fond_champ)
-                player.setImageResource(R.drawable.cavalier_image)
-                obstacleResources = listOf(R.drawable.tree_image, R.drawable.rock_image, R.drawable.barriere_image, R.drawable.vache_image)
-            }
-            "BOLIDE" -> {
-                gameLayout.setBackgroundResource(R.drawable.fond_route)
-                player.setImageResource(R.drawable.voiture_image)
-                obstacleResources = listOf(R.drawable.pneu_image, R.drawable.oil_image, R.drawable.barriere_image)
-            }
-            "FORMULE 1" -> {
-                gameLayout.setBackgroundResource(R.drawable.fond_circuit)
-                player.setImageResource(R.drawable.voituredecourse_image)
-                obstacleResources = listOf(R.drawable.pneu_image, R.drawable.oil_image, R.drawable.barriere_image)
-            }
-            "CORSAIRE" -> {
-                gameLayout.setBackgroundResource(R.drawable.fond_mer)
-                player.setImageResource(R.drawable.bateau_image)
-                obstacleResources = listOf(R.drawable.bouee_image, R.drawable.requin_image, R.drawable.rock_image)
-            }
-            "VOL LÉGER" -> {
-                gameLayout.setBackgroundResource(R.drawable.fond_ciel)
-                player.setImageResource(R.drawable.petitavion_image)
-                obstacleResources = listOf(R.drawable.bird1_image, R.drawable.bird2_image, R.drawable.orage_image, R.drawable.orage2_image, R.drawable.ballon_image, R.drawable.parachute_image, R.drawable.helicoptere_image)
-            }
-            "AIRLINER" -> {
-                gameLayout.setBackgroundResource(R.drawable.fond_ciel)
-                player.setImageResource(R.drawable.grandavion_image)
-                obstacleResources = listOf(R.drawable.bird1_image, R.drawable.bird2_image, R.drawable.orage_image, R.drawable.orage2_image, R.drawable.ballon_image, R.drawable.parachute_image, R.drawable.helicoptere_image)
-            }
-            "STAR JUMPER" -> {
-                gameLayout.setBackgroundResource(R.drawable.fond_espace)
-                player.setImageResource(R.drawable.fusee_image)
-                obstacleResources = listOf(R.drawable.planette_image, R.drawable.satellite_image, R.drawable.etoilefilante_image, R.drawable.extraterrestre_image)
-            }
-            "COMÈTE" -> {
-                gameLayout.setBackgroundResource(R.drawable.fond_espace)
-                player.setImageResource(R.drawable.comete_image)
-                obstacleResources = listOf(R.drawable.planette_image, R.drawable.satellite_image, R.drawable.etoilefilante_image, R.drawable.extraterrestre_image)
-            }
-            else -> {
-                gameLayout.setBackgroundResource(R.drawable.fond_champ)
-                player.setImageResource(R.drawable.coureur_image)
-                obstacleResources = listOf(R.drawable.tree_image, R.drawable.rock_image, R.drawable.barriere_image)
-            }
+    private fun applyTheme() {
+        val p = getSharedPreferences("GAME_PREFS", Context.MODE_PRIVATE)
+        difficulteActuelle = p.getString("DIFF_ACTUELLE", "TRÈS FACILE") ?: "TRÈS FACILE"
+        frameDelay = if (p.getBoolean("SETTING_60FPS", true)) 16L else 32L
+        gameSpeedBase = p.getFloat("VITESSE_ACTUELLE", 15f)
+        when (p.getString("THEME_NOM", "ATHLÈTE")) {
+            "ATHLÈTE"     -> { gameLayout.setBackgroundResource(R.drawable.fond_champ);   player.setImageResource(R.drawable.coureur_image);         obstacleResources = listOf(R.drawable.tree_image, R.drawable.rock_image, R.drawable.barriere_image, R.drawable.vache_image) }
+            "BMX PRO"     -> { gameLayout.setBackgroundResource(R.drawable.fond_champ);   player.setImageResource(R.drawable.velo_image);            obstacleResources = listOf(R.drawable.tree_image, R.drawable.rock_image, R.drawable.barriere_image, R.drawable.vache_image) }
+            "CAVALIER"    -> { gameLayout.setBackgroundResource(R.drawable.fond_champ);   player.setImageResource(R.drawable.cavalier_image);        obstacleResources = listOf(R.drawable.tree_image, R.drawable.rock_image, R.drawable.barriere_image, R.drawable.vache_image) }
+            "BOLIDE"      -> { gameLayout.setBackgroundResource(R.drawable.fond_route);   player.setImageResource(R.drawable.voiture_image);         obstacleResources = listOf(R.drawable.pneu_image, R.drawable.oil_image, R.drawable.barriere_image) }
+            "FORMULE 1"   -> { gameLayout.setBackgroundResource(R.drawable.fond_circuit); player.setImageResource(R.drawable.voituredecourse_image); obstacleResources = listOf(R.drawable.pneu_image, R.drawable.oil_image, R.drawable.barriere_image) }
+            "CORSAIRE"    -> { gameLayout.setBackgroundResource(R.drawable.fond_mer);     player.setImageResource(R.drawable.bateau_image);          obstacleResources = listOf(R.drawable.bouee_image, R.drawable.requin_image, R.drawable.rock_image) }
+            "VOL LÉGER"   -> { gameLayout.setBackgroundResource(R.drawable.fond_ciel);    player.setImageResource(R.drawable.petitavion_image);      obstacleResources = listOf(R.drawable.bird1_image, R.drawable.bird2_image, R.drawable.orage_image, R.drawable.orage2_image, R.drawable.ballon_image, R.drawable.parachute_image, R.drawable.helicoptere_image) }
+            "AIRLINER"    -> { gameLayout.setBackgroundResource(R.drawable.fond_ciel);    player.setImageResource(R.drawable.grandavion_image);      obstacleResources = listOf(R.drawable.bird1_image, R.drawable.bird2_image, R.drawable.orage_image, R.drawable.orage2_image, R.drawable.ballon_image, R.drawable.parachute_image, R.drawable.helicoptere_image) }
+            "STAR JUMPER" -> { gameLayout.setBackgroundResource(R.drawable.fond_espace);  player.setImageResource(R.drawable.fusee_image);           obstacleResources = listOf(R.drawable.planette_image, R.drawable.satellite_image, R.drawable.etoilefilante_image, R.drawable.extraterrestre_image) }
+            "COMÈTE"      -> { gameLayout.setBackgroundResource(R.drawable.fond_espace);  player.setImageResource(R.drawable.comete_image);          obstacleResources = listOf(R.drawable.planette_image, R.drawable.satellite_image, R.drawable.etoilefilante_image, R.drawable.extraterrestre_image) }
+            else          -> { gameLayout.setBackgroundResource(R.drawable.fond_champ);   player.setImageResource(R.drawable.coureur_image);         obstacleResources = listOf(R.drawable.tree_image, R.drawable.rock_image, R.drawable.barriere_image) }
         }
+    }
+
+    private fun obsSize() = (screenWidth * 0.20f).toInt()
+
+    private fun recycleView(): ImageView {
+        pool.firstOrNull { it.view.visibility == View.GONE }?.let { return it.view }
+        return ImageView(this).also {
+            it.scaleType = ImageView.ScaleType.FIT_CENTER
+            it.visibility = View.GONE
+            gameLayout.addView(it)
+            pool.add(ObstacleSlot(it, 0))
+        }
+    }
+
+    private fun trySpawn() {
+        val active = pool.filter { it.view.visibility == View.VISIBLE }
+        if (active.size >= maxObstacles()) return
+
+        // Ne spawner que si le dernier obstacle est suffisamment descendu
+        val topY = active.minOfOrNull { it.view.translationY } ?: Float.MAX_VALUE
+        if (topY != Float.MAX_VALUE && topY < minSpacing()) return
+
+        val iv = recycleView()
+        val sz = obsSize()
+        iv.layoutParams = ConstraintLayout.LayoutParams(sz, sz)
+
+        val occupied = pool
+            .filter { it.view.visibility == View.VISIBLE && it.view.translationY < screenHeight * 0.35f }
+            .map { it.lane }
+        val lane = ((0..2) - occupied.toSet()).let { if (it.isEmpty()) (0..2).random() else it.random() }
+
+        pool.find { it.view === iv }?.lane = lane
+        if (obstacleResources.isNotEmpty()) iv.setImageResource(obstacleResources.random())
+
+        val lw = screenWidth / 3f
+        iv.x = lane * lw + lw / 2f - sz / 2f
+        iv.translationY = -sz.toFloat()
+        iv.visibility = View.VISIBLE
     }
 
     private fun movePlayer(left: Boolean) {
         if (left && currentLane > 0) currentLane--
         else if (!left && currentLane < 2) currentLane++
-
-        val laneWidth = screenWidth / 3f
-        val targetX = (currentLane * laneWidth) + (laneWidth / 2f) - (player.width / 2f)
-
-        player.animate().x(targetX).setDuration(100).start()
+        val lw = screenWidth / 3f
+        player.animate().x(currentLane * lw + lw / 2f - player.width / 2f).setDuration(80).start()
     }
 
-    private fun updateGame() {
-        obstacle.translationY += gameSpeed
-        if (obstacle2.visibility == View.VISIBLE) {
-            obstacle2.translationY += gameSpeed
-        }
-
-        if (obstacle.translationY > gameLayout.height) {
-            score += 10
-            tvScore.text = "Score: $score"
-
-            val acceleration = when(difficulteActuelle) {
-                "TRÈS FACILE" -> 0.05f  // Accélère à peine
-                "FACILE" -> 0.1f
-                "NORMAL" -> 0.25f
-                "DIFFICILE" -> 0.5f     // Ça commence à chauffer
-                "LÉGENDAIRE" -> 0.9f    // Ça devient très vite incontrôlable !
-                else -> 0.1f
+    private fun update() {
+        pool.filter { it.view.visibility == View.VISIBLE }.forEach { obs ->
+            obs.view.translationY += gameSpeed
+            if (obs.view.translationY > screenHeight + obsSize()) {
+                obs.view.visibility = View.GONE
+                score += 10; tvScore.text = "Score: $score"
+                accelerate()
             }
-            gameSpeed += acceleration
-
-            spawnObstacle()
         }
-
-        checkCollision()
+        trySpawn()
+        checkHits()
     }
 
-    private fun spawnObstacle() {
-        if (obstacleResources.isNotEmpty()) {
-            obstacle.setImageResource(obstacleResources.random())
-            obstacle2.setImageResource(obstacleResources.random())
-        }
-
-        obstacle.translationY = -300f
-        obstacle2.translationY = -300f
-
-        // Probabilité d'avoir 2 obstacles qui bloquent la route
-        val chanceDouble = when(difficulteActuelle) {
-            "DIFFICILE" -> 35 // 35% de chances
-            "LÉGENDAIRE" -> 70 // 70% de chances !
-            else -> 0 // 0% pour Normal, Facile et Très Facile
-        }
-
-        val faireDouble = (1..100).random() <= chanceDouble
-
-        // On choisit les colonnes (0 = gauche, 1 = milieu, 2 = droite)
-        val colonnesPossibles = mutableListOf(0, 1, 2)
-
-        val col1 = colonnesPossibles.random()
-        colonnesPossibles.remove(col1) // On l'enlève de la liste pour ne pas superposer
-
-        val laneWidth = screenWidth / 3f
-        obstacle.x = (col1 * laneWidth) + (laneWidth / 2f) - (obstacle.width / 2f)
-
-        if (faireDouble) {
-            val col2 = colonnesPossibles.random()
-            obstacle2.x = (col2 * laneWidth) + (laneWidth / 2f) - (obstacle2.width / 2f)
-            obstacle2.visibility = View.VISIBLE
-
-        } else {
-            obstacle2.visibility = View.GONE
+    private fun accelerate() {
+        val scale = screenHeight / REFERENCE_HEIGHT
+        gameSpeed += scale * when (difficulteActuelle) {
+            "TRÈS FACILE" -> 0.12f
+            "FACILE"      -> 0.20f
+            "MOYEN"       -> 0.35f
+            "NORMAL"      -> 0.50f
+            "DIFFICILE"   -> 0.75f
+            "EXPERT"      -> 1.00f
+            "MAÎTRE"      -> 1.30f
+            "LÉGENDAIRE"  -> 1.80f
+            else          -> 0.20f
         }
     }
 
-    private fun checkCollision() {
-        val playerRect = Rect()
-        player.getHitRect(playerRect)
-
-        // Vérifie le 1er obstacle
-        val obstacleRect = Rect()
-        obstacle.getHitRect(obstacleRect)
-        if (Rect.intersects(playerRect, obstacleRect)) {
-            endGame()
-        }
-
-        // Vérifie le 2ème obstacle S'IL EST LÀ
-        if (obstacle2.visibility == View.VISIBLE) {
-            val obstacle2Rect = Rect()
-            obstacle2.getHitRect(obstacle2Rect)
-            if (Rect.intersects(playerRect, obstacle2Rect)) {
-                endGame()
-            }
+    private fun checkHits() {
+        val pr = Rect(); player.getHitRect(pr)
+        val m = (pr.width() * 0.22f).toInt()
+        val fair = Rect(pr.left + m, pr.top + m, pr.right - m, pr.bottom - m)
+        pool.filter { it.view.visibility == View.VISIBLE }.forEach { obs ->
+            val r = Rect(); obs.view.getHitRect(r)
+            if (Rect.intersects(fair, r)) { endGame(); return }
         }
     }
 
     private fun endGame() {
-        isGameOver = true
-        handler.removeCallbacks(gameRunnable)
-
-        val prefs = getSharedPreferences("GAME_PREFS", Context.MODE_PRIVATE)
-        if (prefs.getBoolean("SETTING_VIBRATION", true)) {
-            val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as android.os.Vibrator
-            vibrator.vibrate(android.os.VibrationEffect.createOneShot(300, android.os.VibrationEffect.DEFAULT_AMPLITUDE))
+        isGameOver = true; handler.removeCallbacks(loop)
+        val p = getSharedPreferences("GAME_PREFS", Context.MODE_PRIVATE)
+        if (p.getBoolean("SETTING_VIBRATION", true)) {
+            (getSystemService(Context.VIBRATOR_SERVICE) as android.os.Vibrator)
+                .vibrate(android.os.VibrationEffect.createOneShot(300, android.os.VibrationEffect.DEFAULT_AMPLITUDE))
         }
-
-        val intent = Intent(this, GameOverActivity::class.java)
-        intent.putExtra("SCORE_FINAL", score)
-        startActivity(intent)
+        startActivity(Intent(this, GameOverActivity::class.java).putExtra("SCORE_FINAL", score))
         finish()
     }
 
-    private fun resetGame() {
-        score = 0
-        isGameOver = false
-        currentLane = 1
-        tvScore.text = "Score: 0"
-        spawnObstacle()
-        handler.post(gameRunnable)
+    private fun reset() {
+        score = 0; isGameOver = false; currentLane = 1; tvScore.text = "Score: 0"
+        pool.forEach { it.view.visibility = View.GONE }
+        val lw = screenWidth / 3f
+        player.x = lw + lw / 2f - player.width / 2f
+
+        // Premier obstacle : déjà à 8% du haut pour qu'il arrive vite
+        val iv = recycleView(); val sz = obsSize()
+        iv.layoutParams = ConstraintLayout.LayoutParams(sz, sz)
+        if (obstacleResources.isNotEmpty()) iv.setImageResource(obstacleResources.random())
+        iv.x = lw + lw / 2f - sz / 2f
+        iv.translationY = -(screenHeight * 0.08f)
+        iv.visibility = View.VISIBLE
+        pool.find { it.view === iv }?.lane = 1
+
+        handler.post(loop)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        handler.removeCallbacks(gameRunnable)
-    }
+    override fun onDestroy() { super.onDestroy(); handler.removeCallbacks(loop) }
 }
