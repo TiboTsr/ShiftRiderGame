@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
-    <uses-permission android:name="android.permission.INTERNET" />
+    xmlns:tools="http://schemas.android.com/tools"> <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:allowBackup="true"
@@ -15,18 +15,20 @@
 
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity android:name=".GameActivity" />
-        <activity android:name=".GameOverActivity" />
-        <activity android:name=".GarageActivity" />
-        <activity android:name=".RulesActivity" android:exported="false" />
-        <activity android:name=".SettingsActivity" android:exported="false" />
+        <activity android:name=".GameActivity" android:screenOrientation="portrait" tools:ignore="LockedOrientationActivity" />
+        <activity android:name=".GameOverActivity" android:screenOrientation="portrait" tools:ignore="LockedOrientationActivity" />
+        <activity android:name=".GarageActivity" android:screenOrientation="portrait" tools:ignore="LockedOrientationActivity" />
+        <activity android:name=".RulesActivity" android:exported="false" android:screenOrientation="portrait" tools:ignore="LockedOrientationActivity" />
+        <activity android:name=".SettingsActivity" android:exported="false" android:screenOrientation="portrait" tools:ignore="LockedOrientationActivity" />
 
     </application>
 </manifest>

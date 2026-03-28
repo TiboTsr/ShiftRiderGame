@@ -8,7 +8,6 @@
     android:background="#1E2366"
     android:padding="16dp">
 
-    <!-- Top Bar -->
     <TextView
         android:id="@+id/tv_top_score"
         android:layout_width="wrap_content"
@@ -33,7 +32,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Logo and Title -->
     <ImageView
         android:id="@+id/iv_logo"
         android:layout_width="0dp"
@@ -46,8 +44,8 @@
         app:layout_constraintTop_toBottomOf="@+id/tv_top_score"
         app:layout_constraintVertical_bias="0.5"
         app:layout_constraintVertical_chainStyle="packed"
-        app:layout_constraintWidth_max="150dp"
-        app:layout_constraintWidth_percent="0.25" />
+        app:layout_constraintWidth_max="100dp"
+        app:layout_constraintWidth_percent="0.20" />
 
     <TextView
         android:id="@+id/tv_title_shift"
@@ -55,7 +53,7 @@
         android:layout_height="wrap_content"
         android:text="SHIFT"
         android:textColor="#FFFFFF"
-        android:textSize="40sp"
+        android:textSize="36sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/tv_title_rider"
         app:layout_constraintEnd_toEndOf="parent"
@@ -68,14 +66,13 @@
         android:layout_height="wrap_content"
         android:text="RIDER"
         android:textColor="#FFAA00"
-        android:textSize="28sp"
+        android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/tv_current_vehicle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tv_title_shift" />
 
-    <!-- New Info Section for Vehicle -->
     <TextView
         android:id="@+id/tv_current_vehicle"
         android:layout_width="wrap_content"
@@ -85,23 +82,33 @@
         android:textColor="#A0A5D0"
         android:textSize="16sp"
         android:textStyle="italic"
-        app:layout_constraintBottom_toTopOf="@+id/textVotrePseudo"
+        app:layout_constraintBottom_toTopOf="@+id/iv_main_vehicle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tv_title_rider" />
 
-    <!-- Pseudo Section -->
+    <ImageView
+        android:id="@+id/iv_main_vehicle"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginTop="8dp"
+        android:src="@drawable/coureur_image"
+        app:layout_constraintBottom_toTopOf="@+id/textVotrePseudo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_current_vehicle" />
+
     <TextView
         android:id="@+id/textVotrePseudo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="16dp"
         android:text="Votre pseudo : "
         android:textColor="#F2EFEF"
         app:layout_constraintBottom_toTopOf="@+id/et_pseudo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_current_vehicle" />
+        app:layout_constraintTop_toBottomOf="@+id/iv_main_vehicle" />
 
     <EditText
         android:id="@+id/et_pseudo"
@@ -122,7 +129,6 @@
         app:layout_constraintWidth_max="250dp"
         app:layout_constraintWidth_percent="0.7" />
 
-    <!-- Actions -->
     <Button
         android:id="@+id/btn_play"
         android:layout_width="0dp"
@@ -130,6 +136,8 @@
         android:layout_marginTop="16dp"
         android:backgroundTint="#FFAA00"
         android:text="JOUER"
+        android:textSize="18sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/btn_garage"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -140,26 +148,41 @@
     <Button
         android:id="@+id/btn_garage"
         android:layout_width="0dp"
-        android:layout_height="60dp"
+        android:layout_height="55dp"
         android:layout_marginTop="12dp"
-        android:backgroundTint="#323B8A"
-        android:text="Garage"
+        android:layout_marginEnd="4dp"
+        android:backgroundTint="#2196F3"
+        android:text="Garage 🛒"
         app:layout_constraintBottom_toTopOf="@+id/btn_settings"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/btn_classement_mondial"
+        app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btn_play"
-        app:layout_constraintWidth_max="300dp"
-        app:layout_constraintWidth_percent="0.8" />
+        app:layout_constraintWidth_max="148dp"
+        app:layout_constraintWidth_percent="0.39" />
 
-    <!-- Bottom Buttons -->
+    <Button
+        android:id="@+id/btn_classement_mondial"
+        android:layout_width="0dp"
+        android:layout_height="55dp"
+        android:layout_marginStart="4dp"
+        android:backgroundTint="#E91E63"
+        android:text="Classement 🏆"
+        app:layout_constraintBottom_toBottomOf="@+id/btn_garage"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/btn_garage"
+        app:layout_constraintTop_toTopOf="@+id/btn_garage"
+        app:layout_constraintWidth_max="148dp"
+        app:layout_constraintWidth_percent="0.39" />
+
     <Button
         android:id="@+id/btn_settings"
         android:layout_width="0dp"
         android:layout_height="55dp"
         android:layout_marginTop="12dp"
         android:layout_marginEnd="4dp"
-        android:backgroundTint="#323B8A"
-        android:text="Paramètres"
+        android:backgroundTint="#607D8B"
+        android:text="Paramètres ⚙️"
         app:layout_constraintBottom_toTopOf="@+id/tv_credits"
         app:layout_constraintEnd_toStartOf="@+id/btn_rules"
         app:layout_constraintHorizontal_chainStyle="packed"
@@ -173,8 +196,8 @@
         android:layout_width="0dp"
         android:layout_height="55dp"
         android:layout_marginStart="4dp"
-        android:backgroundTint="#323B8A"
-        android:text="Règles"
+        android:backgroundTint="#009688"
+        android:text="Règles 📖"
         app:layout_constraintBottom_toBottomOf="@+id/btn_settings"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/btn_settings"

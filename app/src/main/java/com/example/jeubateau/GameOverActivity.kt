@@ -1,6 +1,7 @@
 package com.example.jeubateau
 
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
@@ -13,6 +14,7 @@ class GameOverActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         setContentView(R.layout.activity_game_over)
 
         val tvScoreFinal = findViewById<TextView>(R.id.tv_score_final)

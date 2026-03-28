@@ -1,5 +1,6 @@
 package com.example.jeubateau
 
+import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.os.Bundle
 import android.widget.Button
@@ -15,11 +16,13 @@ class GarageActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         setContentView(R.layout.activity_garage)
 
         items = listOf(
             ItemGarage("coureur", "ATHLÈTE", "Rien ne bat la vitesse humaine. Courez vers la victoire !", 0, R.drawable.coureur_image, 12f, "TRÈS FACILE"),
             ItemGarage("velo", "BMX PRO", "Léger et agile. Parfait pour slalomer entre les obstacles.", 50, R.drawable.velo_image, 14f, "FACILE"),
+            ItemGarage("cavalier", "CAVALIER", "Un destrier puissant pour franchir tous les obstacles du domaine.", 100, R.drawable.cavalier_image, 16f, "MOYEN"),
             ItemGarage("route", "BOLIDE", "La puissance du moteur au service de vos réflexes.", 150, R.drawable.voiture_image, 17f, "NORMAL"),
             ItemGarage("course", "FORMULE 1", "Le summum de la vitesse. Accrochez-vous !", 300, R.drawable.voituredecourse_image, 20f, "DIFFICILE"),
             ItemGarage("mer", "CORSAIRE", "Défiez les vagues à bord de ce navire légendaire.", 500, R.drawable.bateau_image, 22f, "DIFFICILE"),

@@ -1,5 +1,6 @@
 package com.example.jeubateau
 
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Switch
@@ -10,6 +11,7 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         setContentView(R.layout.activity_settings)
 
         val prefs = getSharedPreferences("GAME_PREFS", MODE_PRIVATE)

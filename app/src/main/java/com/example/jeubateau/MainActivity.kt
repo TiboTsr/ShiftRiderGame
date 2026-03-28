@@ -2,9 +2,11 @@ package com.example.jeubateau
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 
@@ -12,6 +14,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         setContentView(R.layout.activity_main)
 
         // Récupération des vues
@@ -59,22 +62,37 @@ class MainActivity : AppCompatActivity() {
         val tvTopScore = findViewById<TextView>(R.id.tv_top_score)
         val tvCoins = findViewById<TextView>(R.id.tv_coins)
         val tvVehicle = findViewById<TextView>(R.id.tv_current_vehicle)
+        val ivMainVehicle = findViewById<ImageView>(R.id.iv_main_vehicle)
         val etPseudo = findViewById<EditText>(R.id.et_pseudo)
 
-        val prefs = getSharedPreferences("GAME_PREFS", Context.MODE_PRIVATE)
-        
+        val prefs = getSharedPreferences("GAME_PREFS", MODE_PRIVATE)
+
         val highScore = prefs.getInt("HIGH_SCORE", 0)
         val coins = prefs.getInt("TOTAL_COINS", 0)
-        val themeNom = prefs.getString("THEME_NOM", "ATHLÈTE")
-        val difficulte = prefs.getString("DIFF_ACTUELLE", "TRÈS FACILE")
+        val themeNom = prefs.getString("THEME_NOM", "ATHLÈTE") ?: "ATHLÈTE"
+        val difficulte = prefs.getString("DIFF_ACTUELLE", "TRÈS FACILE") ?: "TRÈS FACILE"
         val pseudo = prefs.getString("PLAYER_PSEUDO", "")
 
-        tvTopScore.text = "🏆 Score : $highScore"
+        // Mise à jour des textes
+        tvTopScore.text = "🏆 Meilleur score: $highScore"
         tvCoins.text = "🪙 $coins"
-        
-        tvVehicle.text = "Véhicule : $themeNom ($difficulte)"
+
+        tvVehicle.text = "Sélection : $themeNom ($difficulte)"
 
         etPseudo.setText(pseudo)
+
+        when (themeNom) {
+            "ATHLÈTE" -> ivMainVehicle.setImageResource(R.drawable.coureur_image)
+            "BMX PRO" -> ivMainVehicle.setImageResource(R.drawable.velo_image)
+            "BOLIDE" -> ivMainVehicle.setImageResource(R.drawable.voiture_image)
+            "FORMULE 1" -> ivMainVehicle.setImageResource(R.drawable.voituredecourse_image)
+            "CORSAIRE" -> ivMainVehicle.setImageResource(R.drawable.bateau_image)
+            "VOL LÉGER" -> ivMainVehicle.setImageResource(R.drawable.petitavion_image)
+            "AIRLINER" -> ivMainVehicle.setImageResource(R.drawable.grandavion_image)
+            "STAR JUMPER" -> ivMainVehicle.setImageResource(R.drawable.fusee_image)
+            "COMÈTE" -> ivMainVehicle.setImageResource(R.drawable.comete_image)
+            else -> ivMainVehicle.setImageResource(R.drawable.coureur_image)
+        }
     }
 
     override fun onResume() {
