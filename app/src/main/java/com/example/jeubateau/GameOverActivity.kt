@@ -5,6 +5,7 @@ import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.Button
@@ -14,50 +15,102 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.database.FirebaseDatabase
 
+/**
+ * GameOverActivity affiche le score final, les pièces gagnées et le classement mondial.
+ */
 class GameOverActivity : AppCompatActivity() {
 
+    private val TAG = "GameOverActivity"
+
+    // Référence Firebase pour le classement mondial
     private val db = FirebaseDatabase
         .getInstance("https://shiftrider-cce69-default-rtdb.europe-west1.firebasedatabase.app/")
         .getReference("Classement")
 
+    // --- ATTRIBUTS DE L'INTERFACE ---
+    private lateinit var tvScoreFinal: TextView
+    private lateinit var tvCoinsGagnes: TextView
+    private lateinit var tvThemeUsed: TextView
+    private lateinit var tvTitreClassement: TextView
+    private lateinit var btnRejouer: Button
+    private lateinit var btnAccueil: Button
+    private lateinit var layoutLignes: LinearLayout
+    private lateinit var pbLoading: ProgressBar
+
+    /**
+     * Initialisation de l'écran de fin de partie.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.i(TAG, "Démarrage de GameOverActivity")
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
         setContentView(R.layout.activity_game_over)
 
+        // Récupération des données du jeu
         val score = intent.getIntExtra("SCORE_FINAL", 0)
         val prefs = getSharedPreferences("GAME_PREFS", MODE_PRIVATE)
 
-        // On récupère le nom du véhicule !
+        // Identification du thème utilisé pour le classement
         val themeNom = prefs.getString("THEME_NOM", "ATHLÈTE") ?: "ATHLÈTE"
         val themeKey = sanitizeKey(themeNom)
-
-        // Pièces
-        val pieces = score / 10
-        prefs.edit().putInt("TOTAL_COINS", prefs.getInt("TOTAL_COINS", 0) + pieces).apply()
-
-        // UI
-        findViewById<TextView>(R.id.tv_score_final).text  = score.toString()
-        findViewById<TextView>(R.id.tv_coins_gagnes).text = "+$pieces 🪙"
-
-        findViewById<TextView>(R.id.tv_theme_used)?.text   = themeNom
-
-        // On affiche le nom du véhicule dans le titre du classement !
-        findViewById<TextView>(R.id.tv_titre_classement)?.text = "🏆 Top — $themeNom"
-
         val monId = prefs.getString("MON_ID_SECRET", "unknown") ?: "unknown"
 
-        // On appelle les fonctions avec la clé du VÉHICULE (themeKey)
-        sauvegarder(score, themeKey, themeNom, prefs)
-        chargerClassementFirebase(themeKey, monId)
+        // Calcul des récompenses (1 pièce toutes les 10 points)
+        val pieces = score / 10
+        val totalCoins = prefs.getInt("TOTAL_COINS", 0) + pieces
+        prefs.edit().putInt("TOTAL_COINS", totalCoins).apply()
 
-        findViewById<Button>(R.id.btn_rejouer).setOnClickListener {
+        initViews()
+        updateUI(score, pieces, themeNom)
+        setupListeners()
+
+        // Sauvegarde et chargement des scores
+        sauvegarderScore(score, themeKey, themeNom, prefs)
+        chargerClassementFirebase(themeKey, monId)
+    }
+
+    /**
+     * Lie les composants XML aux variables de classe.
+     */
+    private fun initViews() {
+        tvScoreFinal    = findViewById(R.id.tv_score_final)
+        tvCoinsGagnes   = findViewById(R.id.tv_coins_gagnes)
+        tvThemeUsed     = findViewById(R.id.tv_theme_used)
+        tvTitreClassement = findViewById(R.id.tv_titre_classement)
+        btnRejouer      = findViewById(R.id.btn_rejouer)
+        btnAccueil      = findViewById(R.id.btn_accueil)
+        layoutLignes    = findViewById(R.id.layout_lignes)
+        pbLoading       = findViewById(R.id.pb_loading)
+    }
+
+    /**
+     * Met à jour les textes de l'interface.
+     */
+    private fun updateUI(score: Int, pieces: Int, themeNom: String) {
+        tvScoreFinal.text = score.toString()
+        tvCoinsGagnes.text = "+$pieces 🪙"
+        tvThemeUsed.text = themeNom
+        tvTitreClassement.text = "🏆 Top — $themeNom"
+    }
+
+    /**
+     * Définit les actions des boutons Rejouer et Accueil.
+     */
+    private fun setupListeners() {
+        btnRejouer.setOnClickListener {
+            Log.d(TAG, "L'utilisateur souhaite rejouer")
             startActivity(Intent(this, GameActivity::class.java))
             finish()
         }
-        findViewById<Button>(R.id.btn_accueil).setOnClickListener { finish() }
+        btnAccueil.setOnClickListener { 
+            Log.d(TAG, "Retour à l'accueil")
+            finish() 
+        }
     }
 
+    /**
+     * Nettoie le nom du thème pour l'utiliser comme clé Firebase (sans accents/espaces).
+     */
     private fun sanitizeKey(nom: String): String {
         val map = mapOf(
             'É' to 'E', 'È' to 'E', 'Ê' to 'E', 'Ë' to 'E',
@@ -74,47 +127,55 @@ class GameOverActivity : AppCompatActivity() {
             .trim('_')
     }
 
-    private fun sauvegarder(score: Int, themeKey: String, themeNom: String, prefs: android.content.SharedPreferences) {
+    /**
+     * Sauvegarde le score localement et sur Firebase s'il s'agit d'un nouveau record.
+     */
+    private fun sauvegarderScore(score: Int, themeKey: String, themeNom: String, prefs: android.content.SharedPreferences) {
         val monId   = prefs.getString("MON_ID_SECRET", "unknown") ?: "unknown"
         val pseudo  = prefs.getString("PLAYER_PSEUDO", "Joueur") ?: "Joueur"
-        val bestKey = "BEST_$themeKey" // On sauvegarde le record par véhicule
+        val bestKey = "BEST_$themeKey"
         val best    = prefs.getInt(bestKey, 0)
 
+        // Si c'est un record pour ce véhicule spécifique
         if (score > best) {
+            Log.i(TAG, "Nouveau record personnel pour $themeNom : $score")
             prefs.edit().putInt(bestKey, score).apply()
 
+            // Mise à jour du record général si nécessaire
             if (score > prefs.getInt("HIGH_SCORE", 0)) {
                 prefs.edit().putInt("HIGH_SCORE", score).apply()
             }
 
-            // On envoie à Firebase dans le dossier du véhicule
+            // Envoi des données vers le serveur Firebase
             db.child(themeKey).child(monId).setValue(
                 mapOf("nom" to pseudo, "score" to score, "theme" to themeNom)
             ).addOnSuccessListener {
-                android.util.Log.d("FB", "Score $score envoyé pour le véhicule $themeKey")
+                Log.d("FB", "Score enregistré avec succès sur Firebase")
             }.addOnFailureListener { e ->
-                android.util.Log.e("FB", "Erreur Firebase : ${e.message}")
+                Log.e("FB", "Échec de l'envoi du score : ${e.message}")
             }
         }
     }
 
+    /**
+     * Récupère les 100 meilleurs scores depuis Firebase pour le thème actuel.
+     */
     private fun chargerClassementFirebase(themeKey: String, monId: String) {
-        val layoutLignes = findViewById<LinearLayout>(R.id.layout_lignes)
         layoutLignes.removeAllViews()
-        val pbLoading = findViewById<ProgressBar>(R.id.pb_loading)
+        pbLoading.visibility = View.VISIBLE
 
-        // On cherche dans le dossier du véhicule actuel
         db.child(themeKey).orderByChild("score").limitToLast(100).get().addOnSuccessListener { snapshot ->
             pbLoading.visibility = View.GONE
 
             if (!snapshot.exists()) {
-                addEmptyRow(layoutLignes, "Aucun score pour ce véhicule.\nSoyez le premier !")
+                addEmptyRow("Aucun score pour ce véhicule.\nSoyez le premier !")
                 return@addOnSuccessListener
             }
 
             data class JoueurScore(val id: String, val nom: String, val score: Int)
             val joueurs = mutableListOf<JoueurScore>()
 
+            // Extraction des données de l'instantané Firebase
             for (donnee in snapshot.children) {
                 val idFirebase = donnee.key ?: ""
                 val nom = donnee.child("nom").value?.toString() ?: "Anonyme"
@@ -122,54 +183,66 @@ class GameOverActivity : AppCompatActivity() {
                 joueurs.add(JoueurScore(idFirebase, nom, scoreFirebase))
             }
 
+            // Tri décroissant pour le classement
             joueurs.sortByDescending { it.score }
 
+            // Création dynamique des lignes du tableau
             for ((index, joueur) in joueurs.withIndex()) {
                 val isMe = (joueur.id == monId)
-                addRow(layoutLignes, index, joueur.nom, joueur.score.toString(), isMe)
+                addRow(index, joueur.nom, joueur.score.toString(), isMe)
             }
 
         }.addOnFailureListener { e ->
             pbLoading.visibility = View.GONE
-            addEmptyRow(layoutLignes, "Erreur : ${e.message}")
-            android.util.Log.e("FIREBASE_ERREUR", "Erreur complète : ${e.message}")
+            addEmptyRow("Erreur de connexion au serveur")
+            Log.e(TAG, "Erreur Firebase : ${e.message}")
         }
     }
 
-    private fun addRow(parent: LinearLayout, rank: Int, nom: String, score: String, isMe: Boolean) {
+    /**
+     * Ajoute une ligne de score au classement.
+     */
+    private fun addRow(rank: Int, nom: String, score: String, isMe: Boolean) {
         val row = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(14), dp(12), dp(14), dp(12))
+            setPadding(dpToPx(14), dpToPx(12), dpToPx(14), dpToPx(12))
 
+            // Style différent pour la ligne du joueur actuel
             background = if (isMe) getDrawable(R.drawable.bg_row_hightlight) else getDrawable(R.drawable.bg_row)
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply { setMargins(0, 0, 0, dp(8)) }
+            ).apply { setMargins(0, 0, 0, dpToPx(8)) }
         }
 
         val medal = when (rank) { 0 -> "🥇"; 1 -> "🥈"; 2 -> "🥉"; else -> "#${rank + 1}" }
 
-        row.addView(makeText(medal, 15f, "#A0A5D0", true, dp(52)))
-        row.addView(makeText(
+        row.addView(createText(medal, 15f, "#A0A5D0", true, dpToPx(52)))
+        row.addView(createText(
             if (isMe) "$nom  ◀" else nom,
             15f,
             if (isMe) "#FFAA00" else "#FFFFFF",
             true, 0, weight = 1f
         ))
-        row.addView(makeText(score, 17f, "#FFAA00", true))
-        parent.addView(row)
+        row.addView(createText(score, 17f, "#FFAA00", true))
+        layoutLignes.addView(row)
     }
 
-    private fun addEmptyRow(parent: LinearLayout, msg: String) {
-        parent.addView(makeText(msg, 14f, "#A0A5D0", false).apply {
+    /**
+     * Affiche un message lorsqu'aucun score n'est disponible.
+     */
+    private fun addEmptyRow(msg: String) {
+        layoutLignes.addView(createText(msg, 14f, "#A0A5D0", false).apply {
             textAlignment = View.TEXT_ALIGNMENT_CENTER
-            setPadding(0, dp(24), 0, dp(8))
+            setPadding(0, dpToPx(24), 0, dpToPx(8))
         })
     }
 
-    private fun makeText(
+    /**
+     * Aide à la création de TextView dynamique avec style.
+     */
+    private fun createText(
         txt: String, size: Float, color: String, bold: Boolean,
         fixedWidth: Int = LinearLayout.LayoutParams.WRAP_CONTENT,
         weight: Float = 0f
@@ -182,5 +255,8 @@ class GameOverActivity : AppCompatActivity() {
         )
     }
 
-    private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
+    /**
+     * Convertit les DP en pixels pour un affichage cohérent.
+     */
+    private fun dpToPx(dpValue: Int) = (dpValue * resources.displayMetrics.density).toInt()
 }

@@ -16,6 +16,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Button
@@ -27,16 +28,30 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import kotlin.math.abs
 
+/**
+ * GameActivity gère la boucle principale du jeu, les collisions, 
+ * les capteurs et l'interface utilisateur pendant une partie.
+ */
 class GameActivity : AppCompatActivity() {
 
-    private var frameDelay = 16L
+    private val TAG = "GameActivity"
+    private val REFERENCE_HEIGHT = 800f
+    private val MIN_SWIPE = 60
 
+    // --- ATTRIBUTS DE L'INTERFACE (Même nom que XML en camelCase) ---
     private lateinit var player: ImageView
     private lateinit var tvScore: TextView
     private lateinit var gameLayout: ConstraintLayout
     private lateinit var layoutPauseMenu: LinearLayout
     private lateinit var layoutConfirmQuit: LinearLayout
+    private lateinit var btnPause: ImageButton
+    private lateinit var btnResume: Button
+    private lateinit var btnQuit: Button
+    private lateinit var btnConfirmQuit: Button
+    private lateinit var btnCancelQuit: Button
 
+    // --- ÉTAT DU JEU ---
+    private var frameDelay = 16L
     private var difficulteActuelle = "TRÈS FACILE"
     private var currentLane = 1
     private var score = 0
@@ -45,11 +60,11 @@ class GameActivity : AppCompatActivity() {
     private var screenWidth = 0
     private var screenHeight = 0
 
-    // Musique et Sons
+    // --- AUDIO (Musique et Sons) ---
     private var musicPlayer: MediaPlayer? = null
     private var collisionPlayer: MediaPlayer? = null
 
-    // Variables pour l'Accéléromètre (Capteur d'inclinaison)
+    // --- CAPTEURS ET MOUVEMENT ---
     private var sensorManager: SensorManager? = null
     private var accelerometer: Sensor? = null
     private var useSensor = false
@@ -57,21 +72,28 @@ class GameActivity : AppCompatActivity() {
 
     private var gameSpeedBase = 15f
     private var gameSpeed = 15f
-    private val REFERENCE_HEIGHT = 800f
-
     private var x1 = 0f
-    private val MIN_SWIPE = 60
 
+    // --- OBSTACLES ---
     private var obstacleResources: List<Int> = listOf()
 
+    /**
+     * Structure pour stocker un emplacement d'obstacle avec sa vue et sa voie.
+     */
     data class ObstacleSlot(val view: ImageView, var lane: Int)
     private val pool = mutableListOf<ObstacleSlot>()
 
+    /**
+     * Calcule le nombre maximum d'obstacles à l'écran selon le score et la difficulté.
+     */
     private fun maxObstacles(): Int = when {
         score < 500 -> 2
         else -> if (difficulteActuelle in listOf("EXPERT", "MAÎTRE", "LÉGENDAIRE")) 3 else 2
     }
 
+    /**
+     * Calcule l'espacement minimum entre deux obstacles.
+     */
     private fun minSpacing(): Float = screenHeight * when (difficulteActuelle) {
         "TRÈS FACILE", "FACILE" -> 0.55f
         "MOYEN", "NORMAL"       -> 0.50f
@@ -80,15 +102,21 @@ class GameActivity : AppCompatActivity() {
         else                    -> 0.50f
     }
 
+    // --- BOUCLE DE JEU ---
     private val handler = Handler(Looper.getMainLooper())
     private val loop = object : Runnable {
         override fun run() {
-            // Le jeu ne tourne QUE s'il n'est pas en pause
-            if (!isGameOver && !isPaused) { update(); handler.postDelayed(this, frameDelay) }
+            // Le jeu ne tourne QUE s'il n'est pas en pause ni fini
+            if (!isGameOver && !isPaused) { 
+                update() 
+                handler.postDelayed(this, frameDelay) 
+            }
         }
     }
 
-    // --- LE MOTEUR DU CAPTEUR (Écoute l'inclinaison) ---
+    /**
+     * Écouteur pour les changements de l'accéléromètre (Capteur d'inclinaison).
+     */
     private val sensorListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent?) {
             // Si le capteur n'est pas activé ou que le jeu est en pause, on ignore.
@@ -97,7 +125,7 @@ class GameActivity : AppCompatActivity() {
             val x = event.values[0] // L'axe X (Gauche/Droite)
             val currentTime = System.currentTimeMillis()
 
-            // On met un "Cooldown" de 300ms pour éviter que le joueur se téléporte de la voie 0 à 2 instantanément
+            // On met un "Cooldown" de 300ms pour éviter les mouvements brusques
             if (currentTime - lastSensorMoveTime > 300) {
                 if (x > 3.0f) { // Le téléphone est penché vers la GAUCHE
                     movePlayer(true)
@@ -111,115 +139,158 @@ class GameActivity : AppCompatActivity() {
         override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
     }
 
+    /**
+     * Initialisation de l'activité, des vues et des services.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.i(TAG, "Démarrage de GameActivity")
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
         setContentView(R.layout.activity_game)
 
-        player     = findViewById(R.id.player)
-        tvScore    = findViewById(R.id.tv_score)
-        gameLayout = findViewById(R.id.game_layout)
-        layoutPauseMenu = findViewById(R.id.layout_pause_menu)
-        layoutConfirmQuit = findViewById(R.id.layout_confirm_quit)
+        // Liaison des variables aux widgets XML
+        initViews()
 
-        // Initialisation audio
-        musicPlayer = MediaPlayer.create(this, R.raw.musicdefond)
-        musicPlayer?.isLooping = true
-        collisionPlayer = MediaPlayer.create(this, R.raw.collision)
+        // Configuration de l'audio
+        setupAudio()
 
         // Initialisation du gestionnaire de capteurs Android
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
+        // Applique les réglages utilisateur (Thème, FPS, Vitesse)
         applyTheme()
 
+        // Attend que le layout soit dessiné pour obtenir les dimensions réelles
         gameLayout.post {
             screenWidth  = gameLayout.width
             screenHeight = gameLayout.height
             gameSpeed = gameSpeedBase * (screenHeight / REFERENCE_HEIGHT)
 
-            // Au lieu de lancer le jeu tout de suite, on affiche la question !
+            // Affiche la boîte de dialogue pour choisir le mode de pilotage
             afficherChoixControle()
         }
 
-        // Contrôles Tactiles
+        // Configuration des écouteurs tactiles et clics
+        setupListeners()
+    }
+
+    /**
+     * Lie les composants XML aux variables de classe.
+     */
+    private fun initViews() {
+        player            = findViewById(R.id.player)
+        tvScore           = findViewById(R.id.tv_score)
+        gameLayout        = findViewById(R.id.game_layout)
+        layoutPauseMenu   = findViewById(R.id.layout_pause_menu)
+        layoutConfirmQuit = findViewById(R.id.layout_confirm_quit)
+        btnPause          = findViewById(R.id.btn_pause)
+        btnResume         = findViewById(R.id.btn_resume)
+        btnQuit           = findViewById(R.id.btn_quit)
+        btnConfirmQuit    = findViewById(R.id.btn_confirm_quit)
+        btnCancelQuit     = findViewById(R.id.btn_cancel_quit)
+    }
+
+    /**
+     * Prépare les lecteurs MediaPlayer pour la musique et les sons.
+     */
+    private fun setupAudio() {
+        try {
+            musicPlayer = MediaPlayer.create(this, R.raw.musicdefond)
+            musicPlayer?.isLooping = true
+            collisionPlayer = MediaPlayer.create(this, R.raw.collision)
+        } catch (e: Exception) {
+            Log.e(TAG, "Erreur lors du chargement audio", e)
+        }
+    }
+
+    /**
+     * Configure les écouteurs de clics et de toucher (Swipe).
+     */
+    private fun setupListeners() {
+        // Contrôles Tactiles (Swipe)
         gameLayout.setOnTouchListener { _, e ->
-            // Le tactile ne marche QUE si on n'a PAS choisi le capteur
             if (!isGameOver && !isPaused && !useSensor) {
                 if (e.action == MotionEvent.ACTION_DOWN) x1 = e.x
                 if (e.action == MotionEvent.ACTION_UP) {
                     val dx = e.x - x1
-                    if (abs(dx) > MIN_SWIPE) { if (dx > 0) movePlayer(false) else movePlayer(true) }
+                    if (abs(dx) > MIN_SWIPE) { 
+                        if (dx > 0) movePlayer(false) else movePlayer(true) 
+                    }
                 }
             }
             true
         }
 
-        // --- MENU PAUSE ---
-        val btnPause = findViewById<ImageButton>(R.id.btn_pause)
-        val btnResume = findViewById<Button>(R.id.btn_resume)
-        val btnQuit = findViewById<Button>(R.id.btn_quit)
-
+        // Bouton Pause : Met le jeu en pause et affiche le menu
         btnPause.setOnClickListener {
             if (!isGameOver && !isPaused) {
+                Log.d(TAG, "Mise en pause demandée")
                 isPaused = true
-                handler.removeCallbacks(loop) // On arrête le chrono
+                handler.removeCallbacks(loop)
                 musicPlayer?.pause()
-                layoutPauseMenu.visibility = View.VISIBLE // Affiche le menu
+                layoutPauseMenu.visibility = View.VISIBLE
             }
         }
 
+        // Bouton Reprendre : Relance le jeu
         btnResume.setOnClickListener {
+            Log.d(TAG, "Reprise du jeu")
             isPaused = false
             layoutPauseMenu.visibility = View.GONE
             musicPlayer?.start()
-            handler.post(loop) // Relance le chrono
+            handler.post(loop)
         }
 
+        // Bouton Quitter : Affiche le menu de confirmation
         btnQuit.setOnClickListener {
             layoutPauseMenu.visibility = View.GONE
             layoutConfirmQuit.visibility = View.VISIBLE
         }
 
-        // --- MENU CONFIRMATION QUITTER ---
-        val btnConfirmQuit = findViewById<Button>(R.id.btn_confirm_quit)
-        val btnCancelQuit = findViewById<Button>(R.id.btn_cancel_quit)
-
+        // Confirmation de sortie : Ferme l'activité
         btnConfirmQuit.setOnClickListener {
+            Log.i(TAG, "L'utilisateur quitte la partie")
             finish()
         }
 
+        // Annulation de sortie : Retour au menu de pause
         btnCancelQuit.setOnClickListener {
             layoutConfirmQuit.visibility = View.GONE
             layoutPauseMenu.visibility = View.VISIBLE
         }
     }
 
-    // --- LA BOITE DE DIALOGUE DU DÉBUT ---
+    /**
+     * Affiche la boîte de dialogue pour choisir entre tactile ou inclinaison.
+     */
     private fun afficherChoixControle() {
         AlertDialog.Builder(this)
-            .setTitle("Comment voulez-vous piloter ?")
-            .setMessage("Choisissez votre mode de contrôle :")
-            .setCancelable(false) // Empêche de cliquer à côté pour fermer
-            .setPositiveButton("📱 Tactile (Glisser)") { _, _ ->
+            .setTitle(getString(R.string.dialog_control_title))
+            .setMessage(getString(R.string.dialog_control_message))
+            .setCancelable(false)
+            .setPositiveButton(getString(R.string.control_touch)) { _, _ ->
                 useSensor = false
-                reset() // On lance le jeu !
+                reset() // Lance le jeu !
             }
-            .setNegativeButton("📳 Capteur (Inclinaison)") { _, _ ->
+            .setNegativeButton(getString(R.string.control_sensor)) { _, _ ->
                 useSensor = true
-                // On allume le capteur !
                 sensorManager?.registerListener(sensorListener, accelerometer, SensorManager.SENSOR_DELAY_GAME)
-                reset() // On lance le jeu !
+                reset() // Lance le jeu !
             }
             .show()
     }
 
+    /**
+     * Charge le thème, la difficulté et la vitesse depuis les préférences.
+     */
     private fun applyTheme() {
         val p = getSharedPreferences("GAME_PREFS", MODE_PRIVATE)
         difficulteActuelle = p.getString("DIFF_ACTUELLE", "TRÈS FACILE") ?: "TRÈS FACILE"
         frameDelay = if (p.getBoolean("SETTING_60FPS", true)) 16L else 32L
         gameSpeedBase = p.getFloat("VITESSE_ACTUELLE", 15f)
 
+        // Sélection des ressources graphiques selon le thème choisi
         when (p.getString("THEME_NOM", "ATHLÈTE")) {
             "ATHLÈTE"     -> { gameLayout.setBackgroundResource(R.drawable.fond_champ);   player.setImageResource(R.drawable.coureur_image);         obstacleResources = listOf(R.drawable.tree_image, R.drawable.rock_image, R.drawable.barriere_image, R.drawable.vache_image) }
             "BMX PRO"     -> { gameLayout.setBackgroundResource(R.drawable.fond_champ);   player.setImageResource(R.drawable.velo_image);            obstacleResources = listOf(R.drawable.tree_image, R.drawable.rock_image, R.drawable.barriere_image, R.drawable.vache_image) }
@@ -235,6 +306,9 @@ class GameActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Retourne le multiplicateur de vitesse selon la difficulté.
+     */
     private fun getDiffScale(): Float = when (difficulteActuelle) {
         "TRÈS FACILE" -> 0.24f
         "FACILE"      -> 0.26f
@@ -247,8 +321,14 @@ class GameActivity : AppCompatActivity() {
         else          -> 0.30f
     }
 
+    /**
+     * Calcule la taille d'un obstacle en pixels (20% de la largeur écran).
+     */
     private fun obsSize() = (screenWidth * 0.20f).toInt()
 
+    /**
+     * Recyle une vue d'obstacle invisible ou en crée une nouvelle si besoin.
+     */
     private fun recycleView(): ImageView {
         pool.firstOrNull { it.view.visibility == View.GONE }?.let { return it.view }
         return ImageView(this).also {
@@ -259,6 +339,9 @@ class GameActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Tente de faire apparaître un nouvel obstacle s'il y a assez de place.
+     */
     private fun trySpawn() {
         val active = pool.filter { it.view.visibility == View.VISIBLE }
         if (active.size >= maxObstacles()) return
@@ -270,6 +353,7 @@ class GameActivity : AppCompatActivity() {
         val sz = obsSize()
         iv.layoutParams = ConstraintLayout.LayoutParams(sz, sz)
 
+        // Détermine une voie libre pour éviter les murs infranchissables
         val occupied = active.filter { it.view.translationY < screenHeight * 0.55f }.map { it.lane }.toSet()
         val freeLanes = (0..2).filter { !occupied.contains(it) }
         val lane = if (freeLanes.isNotEmpty()) freeLanes.random() else (0..2).random()
@@ -283,6 +367,9 @@ class GameActivity : AppCompatActivity() {
         iv.visibility = View.VISIBLE
     }
 
+    /**
+     * Déplace le joueur vers la voie de gauche ou de droite.
+     */
     private fun movePlayer(left: Boolean) {
         if (left && currentLane > 0) currentLane--
         else if (!left && currentLane < 2) currentLane++
@@ -290,12 +377,17 @@ class GameActivity : AppCompatActivity() {
         player.animate().x(currentLane * lw + lw / 2f - player.width / 2f).setDuration(80).start()
     }
 
+    /**
+     * Met à jour la position des obstacles et le score.
+     */
     private fun update() {
         pool.filter { it.view.visibility == View.VISIBLE }.forEach { obs ->
             obs.view.translationY += gameSpeed
+            // Si l'obstacle sort de l'écran par le bas
             if (obs.view.translationY > screenHeight + obsSize()) {
                 obs.view.visibility = View.GONE
-                score += 10; tvScore.text = "Score: $score"
+                score += 10
+                tvScore.text = getString(R.string.score_format, score)
                 accelerate()
             }
         }
@@ -303,6 +395,9 @@ class GameActivity : AppCompatActivity() {
         checkHits()
     }
 
+    /**
+     * Augmente progressivement la vitesse du jeu selon la difficulté choisie.
+     */
     private fun accelerate() {
         val scale = screenHeight / REFERENCE_HEIGHT
         val maxSpeed = (gameSpeedBase * 0.36f) * scale
@@ -320,22 +415,48 @@ class GameActivity : AppCompatActivity() {
         if (gameSpeed < maxSpeed) gameSpeed += ajout
     }
 
+    /**
+     * Vérifie si le joueur entre en collision avec un obstacle actif.
+     */
     private fun checkHits() {
         val pr = Rect(); player.getHitRect(pr)
+        // Réduction de la hitbox pour plus de "fair-play" (marge de 22%)
         val m = (pr.width() * 0.22f).toInt()
         val fair = Rect(pr.left + m, pr.top + m, pr.right - m, pr.bottom - m)
+        
         pool.filter { it.view.visibility == View.VISIBLE }.forEach { obs ->
             val r = Rect(); obs.view.getHitRect(r)
-            if (Rect.intersects(fair, r)) { endGame(); return }
+            if (Rect.intersects(fair, r)) { 
+                Log.i(TAG, "Collision détectée !")
+                endGame() 
+                return 
+            }
         }
     }
 
+    /**
+     * Arrête le jeu, joue le son de collision et lance l'écran de fin.
+     */
     private fun endGame() {
-        isGameOver = true; handler.removeCallbacks(loop)
+        isGameOver = true
+        handler.removeCallbacks(loop)
         
         musicPlayer?.stop()
         collisionPlayer?.start()
 
+        // Gestion de la vibration
+        vibrateOnCollision()
+
+        val intent = Intent(this, GameOverActivity::class.java)
+        intent.putExtra("SCORE_FINAL", score)
+        startActivity(intent)
+        finish()
+    }
+
+    /**
+     * Fait vibrer l'appareil en cas de collision (si activé dans les réglages).
+     */
+    private fun vibrateOnCollision() {
         val p = getSharedPreferences("GAME_PREFS", MODE_PRIVATE)
         if (p.getBoolean("SETTING_VIBRATION", true)) {
             val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -353,20 +474,29 @@ class GameActivity : AppCompatActivity() {
                 vibrator.vibrate(300)
             }
         }
-        startActivity(Intent(this, GameOverActivity::class.java).putExtra("SCORE_FINAL", score))
-        finish()
     }
 
+    /**
+     * Réinitialise les paramètres pour lancer une nouvelle partie.
+     */
     private fun reset() {
-        score = 0; isGameOver = false; currentLane = 1; tvScore.text = "Score: 0"
+        Log.i(TAG, "Démarrage d'une nouvelle partie")
+        score = 0
+        isGameOver = false
+        currentLane = 1
+        tvScore.text = getString(R.string.score_format, 0)
         pool.forEach { it.view.visibility = View.GONE }
+        
+        // Repositionne le joueur au centre
         val lw = screenWidth / 3f
         player.x = lw + lw / 2f - player.width / 2f
 
         val scale = screenHeight / REFERENCE_HEIGHT
         gameSpeed = gameSpeedBase * scale * getDiffScale()
 
-        val iv = recycleView(); val sz = obsSize()
+        // Création du premier obstacle
+        val iv = recycleView()
+        val sz = obsSize()
         iv.layoutParams = ConstraintLayout.LayoutParams(sz, sz)
         if (obstacleResources.isNotEmpty()) iv.setImageResource(obstacleResources.random())
 
@@ -380,17 +510,18 @@ class GameActivity : AppCompatActivity() {
         handler.post(loop)
     }
 
-    // --- SÉCURITÉS POUR LE CAPTEUR ---
-    // Si l'application est mise en arrière-plan, on éteint le capteur pour économiser la batterie
+    // --- CYCLES DE VIE (SÉCURITÉS POUR LE CAPTEUR ET L'AUDIO) ---
+
     override fun onPause() {
         super.onPause()
+        Log.d(TAG, "onPause : Libération des capteurs")
         if (useSensor) sensorManager?.unregisterListener(sensorListener)
         musicPlayer?.pause()
     }
 
-    // Si on revient sur l'application, on rallume le capteur
     override fun onResume() {
         super.onResume()
+        Log.d(TAG, "onResume : Réactivation des capteurs si nécessaire")
         if (useSensor && !isGameOver && !isPaused) {
             sensorManager?.registerListener(sensorListener, accelerometer, SensorManager.SENSOR_DELAY_GAME)
         }
@@ -399,6 +530,7 @@ class GameActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        Log.i(TAG, "onDestroy : Nettoyage des ressources")
         handler.removeCallbacks(loop)
         sensorManager?.unregisterListener(sensorListener)
         musicPlayer?.release()

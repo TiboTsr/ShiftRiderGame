@@ -49,10 +49,10 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Glissez simplement votre doigt vers la GAUCHE ou vers la DROITE pour changer de voie.\nVotre but : survivre le plus longtemps possible sans percuter d'obstacle !"
+                    android:lineSpacingExtra="4dp"
+                    android:text="Glissez simplement votre doigt vers la GAUCHE ou vers la DROITE pour changer de voie. Ou faites pencher la tablette d'un coté ou l'autre pour faire bouger le personnage.\nVotre but : survivre le plus longtemps possible sans percuter d'obstacle !"
                     android:textColor="#D0D5FF"
-                    android:textSize="16sp"
-                    android:lineSpacingExtra="4dp"/>
+                    android:textSize="16sp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -115,10 +115,10 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Utilisez vos pièces dans le Garage pour débloquer de nouvelles machines.\nAttention : chaque véhicule possède sa propre vitesse et son propre niveau de difficulté !"
+                    android:lineSpacingExtra="4dp"
+                    android:text="Utilisez vos pièces dans le Garage pour débloquer de nouvelles machines.\nAttention : chaque véhicule possède sa propre vitesse, son propre niveau de difficulté et son propre classement !"
                     android:textColor="#D0D5FF"
-                    android:textSize="16sp"
-                    android:lineSpacingExtra="4dp"/>
+                    android:textSize="16sp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 

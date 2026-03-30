@@ -1,3 +1,41 @@
 <resources>
-    <string name="app_name">Shift Rider</string>
+    <string name="app_name">JeuBateau</string>
+    <string name="score_format">Score: %d</string>
+    <string name="dialog_control_title">Comment voulez-vous piloter ?</string>
+    <string name="dialog_control_message">Choisissez votre mode de contrôle :</string>
+    <string name="control_touch">📱 Tactile (Glisser)</string>
+    <string name="control_sensor">📳 Capteur (Inclinaison, plus dur)</string>
+    <string name="very_easy">TRÈS FACILE</string>
+    <string name="easy">FACILE</string>
+    <string name="medium">MOYEN</string>
+    <string name="normal">NORMAL</string>
+    <string name="hard">DIFFICILE</string>
+    <string name="expert">EXPERT</string>
+    <string name="master">MAÎTRE</string>
+    <string name="legendary">LÉGENDAIRE</string>
+
+    <!-- MainActivity -->
+    <string name="top_score_prefix">🏆 Meilleur score: %d</string>
+    <string name="coins_prefix">🪙 %d</string>
+    <string name="title_shift">SHIFT</string>
+    <string name="title_rider">RIDER</string>
+    <string name="current_vehicle_format">%1$s (%2$s)</string>
+    <string name="pseudo_label">Votre pseudo :</string>
+    <string name="pseudo_hint">Entrez votre pseudo</string>
+    <string name="btn_play">JOUER</string>
+    <string name="btn_garage">Garage 🛒</string>
+    <string name="btn_classement">Classement 🏆</string>
+    <string name="btn_settings">Paramètres ⚙️</string>
+    <string name="btn_rules">Règles 📖</string>
+    <string name="credits">Créé par Tibo Tessier - BUT Informatique de Laval</string>
+
+    <!-- RulesActivity -->
+    <string name="rules_title">📜 RÈGLES DU JEU</string>
+    <string name="rules_how_to_play_title">🎮 COMMENT JOUER ?</string>
+    <string name="rules_how_to_play_desc">Glissez simplement votre doigt vers la GAUCHE ou vers la DROITE pour changer de voie. Ou faites pencher la tablette d\'un coté ou l\'autre pour faire bouger le personnage.\nVotre but : survivre le plus longtemps possible sans percuter d\'obstacle !</string>
+    <string name="rules_rewards_title">🪙 RÉCOMPENSES</string>
+    <string name="rules_rewards_desc">Chaque obstacle franchi augmente votre score de 10 points. À la fin de votre course, vous gagnez 1 Pièce d\'Or tous les 10 points marqués.</string>
+    <string name="rules_vehicles_title">🚀 VÉHICULES ET DIFFICULTÉ</string>
+    <string name="rules_vehicles_desc">Utilisez vos pièces dans le Garage pour débloquer de nouvelles machines.\nAttention : chaque véhicule possède sa propre vitesse, son propre niveau de difficulté et son propre classement !</string>
+    <string name="btn_back_home">◀  RETOUR À L\'ACCUEIL</string>
 </resources>
