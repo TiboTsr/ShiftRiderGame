@@ -1,7 +1,7 @@
 package com.example.jeubateau
 
 /**
- * ItemGarage est une classe de données (POJO) représentant un véhicule du garage.
+ * ItemGarage est une classe de données représentant un véhicule du garage.
  * 
  * @property id Identifiant unique utilisé pour les SharedPreferences (ex: "coureur").
  * @property nom Nom affiché à l'utilisateur (ex: "ATHLÈTE").

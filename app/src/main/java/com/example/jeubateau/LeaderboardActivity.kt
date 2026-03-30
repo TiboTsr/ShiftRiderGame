@@ -49,8 +49,7 @@ class LeaderboardActivity : AppCompatActivity() {
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.i(TAG, "Ouverture du classement mondial")
-        
+
         // Verrouillage de l'écran en mode portrait
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
         setContentView(R.layout.activity_leaderboard)
@@ -75,12 +74,12 @@ class LeaderboardActivity : AppCompatActivity() {
      * Lie les composants XML aux variables de classe.
      */
     private fun initViews() {
-        tvVehicule   = findViewById(R.id.tv_vehicule_actuel)
+        tvVehicule = findViewById(R.id.tv_vehicule_actuel)
         layoutLignes = findViewById(R.id.layout_lignes)
-        pbLoading    = findViewById(R.id.pb_loading)
-        btnPrev      = findViewById(R.id.btn_prev)
-        btnNext      = findViewById(R.id.btn_next)
-        btnRetour    = findViewById(R.id.btn_retour)
+        pbLoading = findViewById(R.id.pb_loading)
+        btnPrev = findViewById(R.id.btn_prev)
+        btnNext = findViewById(R.id.btn_next)
+        btnRetour = findViewById(R.id.btn_retour)
     }
 
     /**
@@ -105,8 +104,7 @@ class LeaderboardActivity : AppCompatActivity() {
 
         // Retour à l'accueil
         btnRetour.setOnClickListener { 
-            Log.d(TAG, "Retour à l'accueil depuis le classement")
-            finish() 
+            finish()
         }
     }
 
@@ -116,7 +114,6 @@ class LeaderboardActivity : AppCompatActivity() {
     private fun mettreAJourAffichage() {
         val nomVehicule = vehicules[indexActuel]
         tvVehicule.text = nomVehicule
-        Log.d(TAG, "Affichage du classement pour : $nomVehicule")
         chargerClassement(sanitizeKey(nomVehicule))
     }
 

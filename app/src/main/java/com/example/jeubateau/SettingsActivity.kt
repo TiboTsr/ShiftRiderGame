@@ -31,8 +31,7 @@ class SettingsActivity : AppCompatActivity() {
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.i(TAG, "Ouverture des paramètres")
-        
+
         // Verrouillage de l\'orientation en mode portrait
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         setContentView(R.layout.activity_settings)
@@ -52,12 +51,12 @@ class SettingsActivity : AppCompatActivity() {
      * Lie les composants du fichier XML activity_settings aux variables.
      */
     private fun initViews() {
-        switchMusique   = findViewById(R.id.switch_musique)
-        switchEffets    = findViewById(R.id.switch_effets)
+        switchMusique = findViewById(R.id.switch_musique)
+        switchEffets = findViewById(R.id.switch_effets)
         switchVibration = findViewById(R.id.switch_vibration)
-        switchFps       = findViewById(R.id.switch_fps)
-        btnRetour       = findViewById(R.id.btn_retour_settings)
-        btnReset        = findViewById(R.id.btn_reset_progress)
+        switchFps = findViewById(R.id.switch_fps)
+        btnRetour = findViewById(R.id.btn_retour_settings)
+        btnReset = findViewById(R.id.btn_reset_progress)
     }
 
     /**

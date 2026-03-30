@@ -18,7 +18,6 @@ class RulesActivity : AppCompatActivity() {
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.i(TAG, "Consultation des règles")
 
         // Verrouillage de l'orientation pour éviter les problèmes de mise en page
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED

@@ -463,14 +463,12 @@ class GameActivity : AppCompatActivity() {
                 val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as android.os.VibratorManager
                 vibratorManager.defaultVibrator
             } else {
-                @Suppress("DEPRECATION")
                 getSystemService(VIBRATOR_SERVICE) as Vibrator
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 vibrator.vibrate(VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE))
             } else {
-                @Suppress("DEPRECATION")
                 vibrator.vibrate(300)
             }
         }
@@ -514,14 +512,12 @@ class GameActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        Log.d(TAG, "onPause : Libération des capteurs")
         if (useSensor) sensorManager?.unregisterListener(sensorListener)
         musicPlayer?.pause()
     }
 
     override fun onResume() {
         super.onResume()
-        Log.d(TAG, "onResume : Réactivation des capteurs si nécessaire")
         if (useSensor && !isGameOver && !isPaused) {
             sensorManager?.registerListener(sensorListener, accelerometer, SensorManager.SENSOR_DELAY_GAME)
         }
@@ -530,7 +526,6 @@ class GameActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.i(TAG, "onDestroy : Nettoyage des ressources")
         handler.removeCallbacks(loop)
         sensorManager?.unregisterListener(sensorListener)
         musicPlayer?.release()
